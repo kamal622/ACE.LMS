@@ -1,0 +1,167 @@
+﻿@model dynamic
+
+@{
+    ViewBag.Title = "Student List";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div class="col-lg-12">
+    <div style="color: #ff6a00;">
+        <h2>Students Maintenance</h2>
+    </div>
+    <div ng-app="myApp">
+        <div ng-controller="gridController">
+            <fieldset>
+                <legend>Search</legend>
+                <div class="form-group">
+                    <label class="col-md-2 control-label">
+                        Enrollment No:
+                    </label>
+                    <div class="col-md-3">
+                        @Html.TextBox("EnrollmentNo", null, new { ng_model = "mEnrollmentNo", @class = "form-control" })
+                    </div>
+                    <div class="col-md-7">
+                        <jqx-button ng-click="onSearchClick(event)" jqx-theme="theme" jqx-width="100" jqx-height="30">Search</jqx-button>
+                    </div>
+                </div>
+            </fieldset>
+            <br /><br />
+            <fieldset>
+                <legend>Students List</legend>
+                <jqx-grid id="gridMain" jqx-settings="gridSettings"></jqx-grid>
+            </fieldset>
+        </div>
+    </div>
+</div>
+<script>
+    var demoApp = angular.module("myApp", ["jqwidgets"]).factory('$exceptionHandler', function () {
+        return function (exception, cause) {
+            exception.message += ' (caused by "' + cause + '")';
+            throw exception;
+        }
+    });
+
+    demoApp.controller("gridController", function ($parse, $scope, $http) {
+        $scope.theme = getTheme();
+        $scope.createWidget = false;
+
+        $scope.GenderData = [];
+        $scope.GenderData.push({ id: 1, name: "Male" });
+        $scope.GenderData.push({ id: 2, name: "Female" });
+
+        $scope.mEnrollmentNo = '';
+        var bindGrid = function () {
+            var source = {
+                datatype: "json",
+                type: "POST",
+                datafields: [
+                    { name: 'Id', type: 'int' },
+                    { name: 'EnrollmentNo', type: 'string' },
+                    { name: 'StudentName', type: 'string' },
+                    { name: 'Father', type: 'string' },
+                    { name: 'Mother', type: 'string' },
+                    { name: 'City', type: 'string' },
+                    { name: 'Mobile', type: 'string' },
+                    { name: 'Phone', type: 'string' },
+                    { name: 'Email', type: 'string' },
+                    { name: 'Reference', type: 'string' },
+                    { name: 'CreatedOn', type: 'date' },
+                    { name: 'IsEligible', type: 'string' },
+                    { name: 'gender', type: 'int' },
+                    { name: 'IsReferenceValidate', type: 'string' }
+                ],
+                url: '/Admin/GetEligibleStudents',
+                data: { enrollmentNo: $scope.mEnrollmentNo },
+                Id: "Id"
+            };
+            var gridDataAdapter = new $.jqx.dataAdapter(source);
+            $scope.gridSettings.source = gridDataAdapter;
+        }
+
+        $scope.gridSettings = {
+            width: '100%',
+            //source: $scope.booksData,
+            theme: $scope.theme,
+            columnsresize: true,
+            rowsheight: 35,
+            columns: [
+                            { text: 'Id', datafield: 'Id', hidden: true },
+                            {
+                                text: "", datafield: "", pinned: true, width: 10, cellsrenderer: function (row, columnfield, value, defaulthtml, columnproperties) {
+                                    var dataRecord = $scope.gridSettings.jqxGrid('getrowdata', row);
+                                    var Id = dataRecord.Id;
+
+                                    return "<a href='/Admin/StudentProfile/" + Id.toString() + "' >Edit</a> ";
+                                }
+                            },
+                            {
+                                text: '', datafield: 'IsEligible', width: 10,
+                                cellsrenderer: function (row, columnfield, value, defaulthtml, columnproperties) {
+
+                                    var dataRecord = $scope.gridSettings.jqxGrid('getrowdata', row);
+                                    //grid.jqxGrid('getrowdata', row);
+                                    var Id = dataRecord.Id;
+                                    var gender = dataRecord.gender;
+                                    $parse("_" + Id).assign($scope, value);
+
+                                    if (value == "True") {
+                                        if (gender == 1)
+                                            return "<input type='image' name='_" + Id + "' src='../Content/Images/validMale.png' style='vertical-align: bottom'>";
+                                        else
+                                            return "<input type='image' name='_" + Id + "' src='../Content/Images/validFemale.png' style='vertical-align: bottom'>";
+                                    }
+                                    if (value == "False") {
+                                        if (gender == 1)
+                                            return "<input type='image' name='_" + Id + "' src='../Content/Images/invalidmale.png' style='vertical-align: bottom'>";
+                                        else
+                                            return "<input type='image' name='_" + Id + "' src='../Content/Images/invalidFemale.png' style='vertical-align: bottom'>";
+
+                                    }
+
+                                    if (gender == 1)
+                                        return "<input type='image' name='_" + Id + "' src='../Content/Images/pendingMale.png' style='vertical-align: bottom'>";
+                                    else
+                                        return "<input type='image' name='_" + Id + "' src='../Content/Images/pendingFemale.png' style='vertical-align: bottom'>";
+
+                                }
+                            },
+                            {
+                                text: '', datafield: 'IsReferenceValidate', width: 10,
+                                cellsrenderer: function (row, columnfield, value, defaulthtml, columnproperties) {
+
+                                    var dataRecord = $scope.gridSettings.jqxGrid('getrowdata', row);
+                                    //grid.jqxGrid('getrowdata', row);
+                                    var Id = dataRecord.Id;
+                                    $parse("_" + Id).assign($scope, value);
+
+                                    if (value == "True")
+                                        return "<input type='image' name='_" + Id + "' src='../Content/Images/ValidR.png' style='vertical-align: bottom'>";
+                                    if (value == "False")
+                                        return "<input type='image' name='_" + Id + "' src='../Content/Images/InvalidR.png' style='vertical-align: bottom'>";
+                                    return "<input type='image' name='_" + Id + "' src='../Content/Images/PendingR.png' style='vertical-align: bottom'>";
+                                }
+                            },
+                        { text: 'EnrollmentNo', datafield: 'EnrollmentNo', width: '8%' },
+                        { text: 'Student Name', datafield: 'StudentName', width: '10%' },
+                        { text: 'Father', datafield: 'Father', width: '12%' },
+                        { text: 'Mother', datafield: 'Mother', width: '12%' },
+                        { text: 'City', datafield: 'City', width: '10%' },
+                        { text: 'Mobile', datafield: 'Mobile', width: '7%' },
+                        { text: 'Phone', datafield: 'Phone', width: '7%' },
+                        { text: 'Email', datafield: 'Email', width: '10%' },
+                        { text: 'Reference', datafield: 'Reference', width: '10%' },
+                        { text: 'Registration Date', datafield: 'CreatedOn', cellsformat: 'dd/MM/yyyy', width: '8%' }
+
+            ]
+        };
+
+        bindGrid();
+
+        $scope.onSearchClick = function (e) {
+            bindGrid();
+        };
+
+        $scope.createWidget = true;
+
+    });
+</script>
+

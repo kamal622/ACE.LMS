@@ -1,0 +1,138 @@
+﻿@using ACE.LMS.Core.Models.Library
+@model List<NoticeBoard>
+
+@{
+    ViewBag.Title = "Home Page";
+}
+
+
+
+<div style="color: #ff6a00; text-align: center;">
+    <h2>Welcome To Anavil Book Bank (ABB)</h2>
+    <p><i>An initiative by Kaushik Naik</i> – Assisting deserving Anavil students</p>
+</div>
+<br />
+<br /><br /><br />
+<div class="col-lg-9">
+    <fieldset>
+        <legend><b>Our Goal</b></legend>
+        <p>
+            Anavil Book Bank(ABB) welcomes deserving Anavil students of:
+            <ul>
+                <li style="color: #ff6a00;">Engineering<br /><br /></li>
+                <li style="color: #ff00dc;">Pharmacy<br /><br /></li>
+                <li style="color: #808080;">Managment<br /><br /></li>
+                <li style="color: #0094ff;">Physiotherapy ( Smt. Vibha Arvind Desai (NJ, USA) Physiotherapy section )</li>
+            </ul>
+        </p>
+    </fieldset>
+    @if (Model.Count() > 0)
+    {
+        <fieldset>
+            <legend><b>Notice Board</b></legend>
+            @foreach (var notice in Model)
+            {
+                <ul>
+                    <li>
+                        <b>
+                            @notice.Title
+                        </b>
+                        <br />
+                        @notice.Description
+                    </li>
+                </ul>
+            }
+        </fieldset>
+    }
+    <br /><br /><br /><br />
+    <p style="font-size: 0.80em">
+        <b>Note:</b> In case of any difficulty please contact Mr.Vatsal Desai (9879768671) between 8:00 AM to 11:00 AM.
+    </p>
+</div>
+<div class="col-lg-3">
+    <fieldset>
+        <legend><b>Announcements</b></legend>
+        <ul>
+            <li>
+                <p style="color: #0094ff">Begining June 2015, we are starting Smt. Vibha Arvind Desai (NJ, USA) Physiotherapy section. Dr. Bhumija S Desai has consented to be subject expert.</p>
+            </li>
+        </ul>
+    </fieldset>
+</div>
+
+
+
+@*<div ng-app="myApp">
+        <div ng-controller="gridController">
+            <jqx-grid jqx-create="createWidget" jqx-source="booksData" jqx-columns="columns" jqx-settings="gridSettings"></jqx-grid>
+                <jqx-button jqx-theme="theme">Button</jqx-button>
+        </div>
+    </div>*@
+@*<script>
+        var demoApp = angular.module("myApp", ["jqwidgets"]).factory('$exceptionHandler', function () {
+            return function (exception, cause) {
+                exception.message += ' (caused by "' + cause + '")';
+                throw exception;
+            }
+        });
+        demoApp.controller("gridController", function ($scope, $http) {
+            $scope.theme = getTheme();
+            $scope.createWidget = false;
+            $http({
+                method: 'get',
+                url: '/Home/GetBooks'
+            }).success(function (data, status) {
+                // prepare the data
+                var source = {
+                    datatype: "json",
+                    datafields: [
+                        { name: 'Id', type: 'int' },
+                        { name: 'Title', type: 'string' },
+                        { name: 'Author', type: 'string' },
+                        { name: 'Publication', type: 'int' },
+                        { name: 'PurchaseDate', type: 'date' },
+                        { name: 'Price', type: 'float' },
+                        { name: 'Status', type: 'string' },
+                        { name: 'PublishedYear', type: 'int' }
+                    ],
+                    id: 'id',
+                    localdata: data,
+                    pager: function (pagenum, pagesize, oldpagenum) {
+                        // callback called when a page or page size is changed.
+                    }
+                };
+                $scope.booksData = new $.jqx.dataAdapter(source, {
+                    downloadComplete: function (data) {
+                        source.totalrecords = data.TotalRows;
+                    }
+                });
+            }).error(function (data, status) {
+                alert(data);
+                // Some error occurred
+            });
+
+            $scope.gridSettings =
+               {
+                   width: '100%',
+                   //source: $scope.dataAdapter,
+                   theme: $scope.theme,
+                   columnsresize: true,
+                   ready: function () {
+                       $scope.gridSettings.jqxGrid('showloadelement');
+                   }
+               };
+            $scope.columns =
+                    [
+                          { text: 'Title', datafield: 'Title' },
+                          { text: 'Author', datafield: 'Author' },
+                          { text: 'Publication', datafield: 'Publication', width: 180 },
+                          { text: 'PurchaseDate', datafield: 'PurchaseDate', width: 120, cellsformat: 'MM/dd/yyyy' },
+                          { text: 'Price', datafield: 'Price', minwidth: 120 },
+                          { text: 'Status', datafield: 'Status', minwidth: 120 },
+                          { text: 'PublishedYear', datafield: 'PublishedYear', minwidth: 50 }
+                    ];
+            // now create the widget.
+            $scope.createWidget = true;
+        });
+
+    </script>*@

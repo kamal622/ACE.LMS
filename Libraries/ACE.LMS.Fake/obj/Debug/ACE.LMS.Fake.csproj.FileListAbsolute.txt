@@ -1,0 +1,10 @@
+D:\Users\Kamal\ProSVN\ACE.LMS\Libraries\ACE.LMS.Fake\bin\Debug\ACE.LMS.Fake.dll.config
+D:\Users\Kamal\ProSVN\ACE.LMS\Libraries\ACE.LMS.Fake\bin\Debug\ACE.LMS.Fake.dll
+D:\Users\Kamal\ProSVN\ACE.LMS\Libraries\ACE.LMS.Fake\bin\Debug\ACE.LMS.Fake.pdb
+D:\Users\Kamal\ProSVN\ACE.LMS\Libraries\ACE.LMS.Fake\bin\Debug\EntityFramework.dll
+D:\Users\Kamal\ProSVN\ACE.LMS\Libraries\ACE.LMS.Fake\bin\Debug\EntityFramework.SqlServer.dll
+D:\Users\Kamal\ProSVN\ACE.LMS\Libraries\ACE.LMS.Fake\bin\Debug\EntityFramework.xml
+D:\Users\Kamal\ProSVN\ACE.LMS\Libraries\ACE.LMS.Fake\bin\Debug\EntityFramework.SqlServer.xml
+D:\Users\Kamal\ProSVN\ACE.LMS\Libraries\ACE.LMS.Fake\obj\Debug\ACE.LMS.Fake.csprojResolveAssemblyReference.cache
+D:\Users\Kamal\ProSVN\ACE.LMS\Libraries\ACE.LMS.Fake\obj\Debug\ACE.LMS.Fake.dll
+D:\Users\Kamal\ProSVN\ACE.LMS\Libraries\ACE.LMS.Fake\obj\Debug\ACE.LMS.Fake.pdb

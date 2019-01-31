@@ -1,0 +1,56 @@
+﻿@using ACE.LMS.Web.Framework.UI
+@{
+    //success messages
+    var successMessages = new List<string>();
+    if (TempData[string.Format("ace.notifications.{0}", NotifyType.Success)] != null)
+    {
+        successMessages.AddRange(TempData[string.Format("ace.notifications.{0}", NotifyType.Success)] as IList<string>);
+    }
+    if (ViewData[string.Format("ace.notifications.{0}", NotifyType.Success)] != null)
+    {
+        successMessages.AddRange(ViewData[string.Format("ace.notifications.{0}", NotifyType.Success)] as IList<string>);
+    }
+
+
+    //error messages
+    var errorMessages = new List<string>();
+    if (TempData[string.Format("ace.notifications.{0}", NotifyType.Error)] != null)
+    {
+        errorMessages.AddRange(TempData[string.Format("ace.notifications.{0}", NotifyType.Error)] as IList<string>);
+    }
+    if (ViewData[string.Format("ace.notifications.{0}", NotifyType.Error)] != null)
+    {
+        errorMessages.AddRange(ViewData[string.Format("ace.notifications.{0}", NotifyType.Error)] as IList<string>);
+    }
+}
+@foreach (var message in successMessages)
+{
+    <script type="text/javascript">
+        $(document).ready(function () {
+            @*displayPopupNotification('@Html.Raw(HttpUtility.JavaScriptStringEncode(message))', 'success', false);*@
+            displayBarNotification('@Html.Raw(HttpUtility.JavaScriptStringEncode(message))', 'success', 5);
+        });
+    </script>
+}
+@foreach (var message in errorMessages)
+{
+    <script type="text/javascript">
+        $(document).ready(function () {
+            @*displayPopupNotification('@Html.Raw(HttpUtility.JavaScriptStringEncode(message))', 'error', false);*@
+            displayBarNotification('@Html.Raw(HttpUtility.JavaScriptStringEncode(message))', 'error', 15);
+        });
+    </script>
+}
+<div id="dialog-notifications-success" title="Notification" style="display:none;">
+    <div>Notification</div>
+    <div id="dialog-notifications-success-container"></div>
+</div>
+<div id="dialog-notifications-error" title="Error" style="display:none;">
+    <div>Error</div>
+    <div id="dialog-notifications-error-container"></div>
+</div>
+<div id="bar-notification" class="bar-notification">
+    @*<span class="close" title="Close">&nbsp;</span>*@
+    <div id="bar-notification-container"></div>
+</div>
+<div id="container"></div>

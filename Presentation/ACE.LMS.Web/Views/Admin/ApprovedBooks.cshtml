@@ -1,0 +1,166 @@
+﻿@model dynamic
+
+@{
+    ViewBag.Title = "Approved Books";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+}
+
+<h2>title</h2>
+
+<div ng-app="myApp">
+    <div ng-controller="gridController">
+        <jqx-grid id="gridMain" jqx-settings="gridSettings"></jqx-grid>
+    </div>
+</div>
+
+<script>
+    var demoApp = angular.module("myApp", ["jqwidgets"]).factory('$exceptionHandler', function () {
+        return function (exception, cause) {
+            exception.message += ' (caused by "' + cause + '")';
+            throw exception;
+        }
+    });
+
+    demoApp.controller("gridController", function ($parse, $scope, $http) {
+        $scope.theme = getTheme();
+        $scope.createWidget = false;
+
+        $scope.AvailableFrom = new Date();
+        $scope.Status = "";
+        $scope.Notes = "";
+        $scope.stat = "";
+
+        $scope.dateInputSettings = {
+            width: 200,
+            height: 30,
+            formatString: 'dd/MM/yyyy',
+            theme: $scope.theme
+        }
+        var bindGrid = function () {
+            var source = {
+                datatype: "json",
+                type: "POST",
+                datafields: [
+                    { name: 'Id', type: 'int' },
+                    { name:'EnrollmentNo',type:'string'},
+                    { name: 'StudentName', type: 'string' },
+                    { name: 'CollegeName', type: 'string' },
+                    { name: 'BranchName', type: 'int' },
+                    { name: 'RequestDate', type: 'date' },
+                    { name: 'ApprovedDate', type: 'date' }
+
+                ],
+                url: '/Admin/GetRequests',
+                data: { task: "View" },
+                Id: "Id"
+            };
+            var gridDataAdapter = new $.jqx.dataAdapter(source);
+            $scope.gridSettings.source = gridDataAdapter;
+        }
+
+        var initrowdetails = function (index, parentElement, gridElement, record) {
+            var id = record.uid.toString();
+            var grid = $($(parentElement).children()[0]);
+            var rowData = $scope.gridSettings.apply('getrowdata', index);
+
+            var nestedSource = {
+                datafields: [
+                   { name: 'BookRequestDetailId', type: 'int' },
+                   { name: 'BookId', type: 'int' },
+                   { name: 'Title', type: 'string' },
+                   { name: 'BookNo',type:'string'},
+                   { name: 'Author', type: 'string' },
+                   { name: 'Publication', type: 'string' },
+                   { name: 'AvailableBooks', type: 'int' },
+                   { name: 'Status', type: 'int' },
+                   { name: 'totalInLibrary', type: 'int' },
+                   { name: 'ApprovedBooks', type: 'int' },
+                   { name: 'NewApproval', type: 'int' },
+                   { name: 'IssuedBooks', type: 'int' },
+                   { name: 'TornBooks', type: 'int' },
+                   { name: 'Available', type: 'string' }
+                ],
+                datatype: 'json',
+                type: 'POST',
+                root: 'Details',
+                url: '/Admin/GetRequestDetails',
+                Id: "BookRequestDetailId",
+                data: { BookRequestId: rowData.Id, task: "View" }
+            };
+
+            var nestedAdapter = new $.jqx.dataAdapter(nestedSource);
+
+            if (grid != null) {
+                grid.jqxGrid({
+                    source: nestedAdapter,
+                    width: '100%',
+                    columnsresize: true,
+                    theme: $scope.theme,
+                    columns: [
+                            { text: "BookRequestDetailId", datafield: "BookRequestDetailId", hidden: true },
+                            { text: "IssueId", datafield: "IssueId", hidden: true },
+                            { text: "Title", datafield: "Title", width: '20%' },
+                            { text: "BookId", datafield: "BookId", hidden: true },
+                            { text: "Author", datafield: "Author", width: '20%' },
+                            { text: "Publication", datafield: "Publication", width: '20%' },
+                          //  { text: 'totalInLibrary', datafield: 'totalInLibrary' },
+                          //  { text: 'Approved', datafield: 'ApprovedBooks', width: '5%' },
+                           // { text: 'New Proposal', datafield: 'NewApproval', width: '5%' },
+                            { text: 'Issued', datafield: 'IssuedBooks', width: '5%' },
+                            { text: 'Torn/Missing', datafield: 'TornBooks', width: '5%' },
+                            { text: "Available", datafield: "Available", width: '5%' }
+
+                    ]
+                });
+
+               
+
+              
+                // initialize the popup window and buttons.
+            }
+        }
+
+        $scope.gridSettings = {
+            width: '100%',
+            //source: $scope.booksData,
+            theme: $scope.theme,
+            columnsresize: true,
+            rowdetails: true,
+            rowsheight: 35,
+            columns: [
+{text:'EnrollmentNo',datafield:'EnrollmentNo'},
+                        { text: 'StudentName', datafield: 'StudentName' },
+                        { text: 'CollegeName', datafield: 'CollegeName' },
+                        { text: 'BranchName', datafield: 'BranchName', width: 180 },
+                        { text: 'RequestDate', datafield: 'RequestDate', width: 120, cellsformat: 'dd/MM/yyyy' }
+            ],
+            initrowdetails: initrowdetails,
+            rowdetailstemplate: {
+                rowdetails: "<div id='grid' style='margin: 10px;'></div>",
+                rowdetailsheight: 220,
+                rowdetailshidden: true
+            },
+            bindingcomplete: function (event) {
+                if ($scope.bookRequestId <= 0)
+                    return;
+                var index = -1;
+                for (var i = 0, len = $scope.gridSettings.source.records.length; i < len; i++) {
+                    if ($scope.gridSettings.source.records[i].Id.toString() === $scope.bookRequestId) {
+                        index = i;
+                        break;
+                    }
+                }
+                $scope.bookRequestId = 0;
+                // var rowIndex = $scope.gridSettings.apply('getrowboundindexbyid', $scope.bookRequestId);
+                if (index >= 0)
+                    $scope.gridSettings.apply('showrowdetails', index);
+            }
+        };
+
+        bindGrid();
+        $scope.createWidget = true;
+
+    });
+
+</script>

@@ -1,0 +1,101 @@
+﻿@{
+    ViewBag.Title = "Dashboard";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div class="col-lg-12">
+    <div style="color: #ff6a00;">
+        <h2>Dashboard</h2>
+        <br />
+        <h4>Book Requests</h4>
+    </div>
+    @using (Html.BeginForm("Index", "Student", new { ReturnUrl = ViewBag.ReturnUrl }, FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
+    {
+        @Html.AntiForgeryToken()
+        <div id="divMain" class="row" ng-app="ABBApp">
+            <div class="col-md-12" ng-controller="studentController">
+                <div id="jqxgrid">
+                </div>
+                <jqx-grid jqx-create="createWidget" jqx-settings="gridSettings"></jqx-grid>
+            </div>
+        </div>
+    }
+</div>
+@section Scripts {
+
+
+
+
+
+
+    @Scripts.Render("~/bundles/jqueryval")
+    <script type="text/javascript" language="javascript">
+        var abbApp = angular.module("ABBApp", ["jqwidgets"]).factory('$exceptionHandler', function () {
+            return function (exception, cause) {
+                exception.message += ' (caused by "' + cause + '")';
+                //console.log(exception, cause);
+                alert(exception.message);
+                //throw exception;
+            }
+        });
+
+
+        abbApp.controller("studentController", function ($scope, $http, $window) {
+            $('#divMain').blockElement({ showImage: false });
+            $scope.theme = getTheme();
+            $scope.createWidget = false;
+            var source =
+            {
+                datatype: "json",
+                datafields: [
+                    { name: 'Id', type: 'int' },
+                    { name: 'RequestId', type: 'int' },
+                    { name: 'Subject', type: 'string' },
+                    { name: 'BookTitle', type: 'string' },
+                    { name: 'BookAuthor', type: 'string' },
+                    { name: 'BookPublisher', type: 'string' },
+                    { name: 'RequestDate', type: 'date' },
+                    { name: 'IssueDate', type: 'date' },
+                    { name: 'ReturnBefore', type: 'date' },
+                    { name: 'ReturnDate', type: 'date' },
+                    { name: 'Status', type: 'string' }
+                ],
+                url: "/Student/GetRequests",
+                id: 'id'
+            };
+
+            var dataAdapter = new $.jqx.dataAdapter(source, {
+                loadComplete: function (records) {
+                    $('#divMain').unblock();
+                }
+            })
+
+            $scope.gridSettings =
+                {
+                    width: '100%',
+                    theme: $scope.theme,
+                    source: dataAdapter,
+                    columnsresize: true,
+                    columns: [
+                        { text: 'Subject', datafield: 'Subject' },
+                        { text: 'Title', datafield: 'BookTitle' },
+                        { text: 'Author', datafield: 'BookAuthor' },
+                        { text: 'Publisher', datafield: 'BookPublisher' },
+                        { text: 'Status', datafield: 'Status' },
+                        { text: 'Request Date', datafield: 'RequestDate', cellsformat: 'dd/MM/yyyy' },
+                        { text: 'Issue Date', datafield: 'IssueDate', cellsformat: 'dd/MM/yyyy' },
+                        { text: 'Return Before', datafield: 'ReturnBefore', cellsformat: 'dd/MM/yyyy' },
+                        { text: 'Return Date', datafield: 'ReturnDate', cellsformat: 'dd/MM/yyyy' }
+                    ],
+                    bindingcomplete: function (event) {
+                        $scope.gridSettings.apply('autoresizecolumns');
+                    }
+                };
+
+            angular.element($window).bind('resize', function () {
+                //$scope.gridSettings.apply('autoresizecolumns');
+            });
+
+            $scope.createWidget = true;
+        });
+    </script>
+}

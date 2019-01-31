@@ -1,0 +1,249 @@
+﻿@{
+    ViewBag.Title = "User Maintenance";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<style type="text/css">
+    .jqx-grid-header {
+        height: 50px !important;
+    }
+</style>
+
+<div class="col-lg-12">
+    <div style="color: #ff6a00;">
+        <h2>@ViewBag.Title</h2>
+    </div>
+    <div ng-app="ABBApp">
+        <div ng-controller="userController">
+            <fieldset>
+                <legend>Search</legend>
+                <div class="col-md-12 form-group">
+                    <div class="row">
+                        <label class="col-md-2 control-label">
+                            User Type:
+                        </label>
+                        <div class="col-md-1">
+                            <jqx-drop-down-list ng-model="selectedUserType" jqx-ng-model jqx-settings="ddlUserTypeSettings"></jqx-drop-down-list>
+                        </div>
+                        <label class="col-md-1 control-label">
+                            Blocked:
+                        </label>
+                        <div class="col-md-1">
+                            <jqx-drop-down-list ng-model="selectedIsBlocked" jqx-ng-model jqx-settings="ddlIsBlockedSettings"></jqx-drop-down-list>
+                        </div>
+                        <label class="col-md-2 control-label">
+                            First Name:
+                        </label>
+                        <div class="col-md-2">
+                            @Html.TextBox("FirstName", null, new { ng_model = "FirstName", @class = "form-control" })
+                        </div>
+                        <label class="col-md-1 control-label">
+                            Email:
+                        </label>
+                        <div class="col-md-2">
+                            @Html.TextBox("Email", null, new { ng_model = "Email", @class = "form-control" })
+                        </div>
+                    </div>
+                    </br>
+                    <div class="row">
+                        <label class="col-md-2 control-label">
+                            Email Confirmed:
+                        </label>
+                        <div class="col-md-1">
+                            <jqx-drop-down-list ng-model="selectedEmailConfirmed" jqx-ng-model jqx-settings="ddlEmailConfirmedSettings"></jqx-drop-down-list>
+                        </div>
+                        <label class="col-md-1 control-label">
+                            Active:
+                        </label>
+                        <div class="col-md-1">
+                            <jqx-drop-down-list ng-model="selectedIsActive" jqx-ng-model jqx-settings="ddlIstActiveSettings"></jqx-drop-down-list>
+                        </div>
+                        <label class="col-md-2 control-label">
+                            Last Name:
+                        </label>
+                        <div class="col-md-2">
+                            @Html.TextBox("LastName", null, new { ng_model = "LastName", @class = "form-control" })
+                        </div>
+                        <div class="col-md-3 text-right">
+                            <jqx-button ng-click="onSearchClick(event)" jqx-theme="theme" jqx-width="100" jqx-height="30">Search</jqx-button>
+                        </div>
+                    </div>
+                </div>
+            </fieldset>
+            <fieldset>
+                <legend>User List</legend>
+                <jqx-grid id="gridMain" jqx-settings="gridSettings"></jqx-grid>
+            </fieldset>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    <script type="text/javascript" language="javascript">
+        var abbApp = angular.module("ABBApp", ["jqwidgets"]).factory('$exceptionHandler', function () {
+            return function (exception, cause) {
+                exception.message += ' (caused by "' + cause + '")';
+                console.log(exception, cause);
+                //alert(exception.message);
+                throw exception;
+            }
+        });
+
+
+        abbApp.controller("userController", function ($scope, $http) {
+            $scope.theme = getTheme();
+            $scope.selectedUserType = { id: 1, name: 'All' };
+            $scope.selectedEmailConfirmed = { id: 1, name: 'Any' };
+            $scope.selectedIsActive = { id: 1, name: 'Any' };
+            $scope.selectedIsBlocked = { id: 1, name: 'Any' };
+
+            $scope.ddlUserTypeSettings = {
+                theme: $scope.theme,
+                width: 80,
+                height: 30,
+                autoDropDownHeight: true,
+                displayMember: "name",
+                valueMember: "id",
+                source: [{ id: 1, name: 'All' }, { id: 2, name: 'Admin' }, { id: 3, name: 'Librarian' }, { id: 4, name: 'Student' }]
+            };
+
+            $scope.ddlEmailConfirmedSettings = {
+                theme: $scope.theme,
+                width: 80,
+                height: 30,
+                autoDropDownHeight: true,
+                displayMember: "name",
+                valueMember: "id",
+                source: [{ id: 1, name: 'Any' }, { id: 2, name: 'Yes' }, { id: 3, name: 'No' }]
+            };
+
+            $scope.ddlIstActiveSettings = {
+                theme: $scope.theme,
+                width: 80,
+                height: 30,
+                autoDropDownHeight: true,
+                displayMember: "name",
+                valueMember: "id",
+                source: [{ id: 1, name: 'Any' }, { id: 2, name: 'Yes' }, { id: 3, name: 'No' }]
+            };
+
+            $scope.ddlIsBlockedSettings = {
+                theme: $scope.theme,
+                width: 80,
+                height: 30,
+                autoDropDownHeight: true,
+                displayMember: "name",
+                valueMember: "id",
+                source: [{ id: 1, name: 'Any' }, { id: 2, name: 'Yes' }, { id: 3, name: 'No' }]
+            };
+
+            $scope.gridSettings =
+            {
+                theme: $scope.theme,
+                altrows: true,
+                width: '100%',
+                sortable: true,
+                editable: true,
+                columns: [
+                    { text: 'User Type', datafield: 'UserType', editable: false, width: 100 },
+                    { text: 'First Name', datafield: 'FirstName', editable: false },
+                    { text: 'Last Name', datafield: 'LastName', editable: false },
+                    { text: 'User Name', datafield: 'UserName', editable: false, width: 300 },
+                    { text: 'Email </br> Confirmed', datafield: 'EmailConfirmed', columntype: 'checkbox', width: 80 },
+                    { text: 'Active', datafield: 'IsActive', columntype: 'checkbox', width: 50 },
+                    { text: 'Blocked', datafield: 'IsBlocked', columntype: 'checkbox', width: 60 },
+                    {
+                        text: 'Verify Email', datafield: 'Edit', columntype: 'button', width: 80, cellsrenderer: function () {
+                            return "Verify Email";
+                        }, buttonclick: function (row) {
+                            // open the popup window when the user clicks a button.
+                            editrow = row;
+                            // get the clicked row's data and initialize the input fields.
+                            var dataRecord = $("#gridMain").jqxGrid('getrowdata', editrow);
+                            // Send verification email
+                            $('#gridMain').blockElement({ showImage: true });
+                            $http.post('/Admin/VerifyEmail', { userId: dataRecord.Id })
+                                .success(function (data) {
+                                    if ((data.Message == 'Success')) {
+
+                                        displayBarNotification('Verificaton email sent successfully.', 'success', 15);
+
+                                        $('html, body').animate({
+                                            'scrollTop': $("#container").position().top - 50
+                                        });
+                                    }
+                                    else {
+                                        displayBarNotification('Error sending verification email.', 'error', 15);
+                                    }
+                                    $('#gridMain').unblock();
+                                }).error(function (data, status, headers, config) {
+                                    displayBarNotification('Error sending verification email.', 'error', 15);
+                                    $('#gridMain').unblock();
+                                });
+                        }
+                    }
+                ],
+                bindingcomplete: function (event) {
+                }
+            }
+
+            var bindGrid = function () {
+                $('#gridMain').blockElement({ showImage: false });
+                var source = {
+                    datatype: "json",
+                    type: "POST",
+                    updaterow: function (rowid, rowdata, commit) {
+                        // synchronize with the server - send update command
+                        // call commit with parameter true if the synchronization with the server is successful
+                        // and with parameter false if the synchronization failder.
+                        $('#gridMain').blockElement({ showImage: true });
+                        $http.post('/Admin/UpdateUserData', { userId: rowdata.Id, userProfileId: rowdata.UserProfileId, isEmailConfirmed: rowdata.EmailConfirmed, isActive: rowdata.IsActive, isBlocked: rowdata.IsBlocked })
+                            .success(function (data) {
+                                commit((data.Message == 'Success'));
+                                $('#gridMain').unblock();
+                            }).error(function (data, status, headers, config) {
+                                commit(false);
+                                $('#gridMain').unblock();
+                            });
+
+                    },
+                    datafields: [
+                        { name: 'Id', type: 'string' },
+                        { name: 'UserProfileId', type: 'int' },
+                        { name: 'UserName', type: 'string' },
+                        { name: 'UserType', type: 'string' },
+                        { name: 'FirstName', type: 'string' },
+                        { name: 'LastName', type: 'string' },
+                        { name: 'EmailConfirmed', type: 'bool' },
+                        { name: 'IsActive', type: 'bool' },
+                        { name: 'IsBlocked', type: 'bool' },
+                        { name: 'RegistrationDate', type: 'date' }
+                    ],
+                    url: '/Admin/GetUserList',
+                    data: {
+                        userType: $scope.selectedUserType.name,
+                        emailConfirmed: $scope.selectedEmailConfirmed.id,
+                        blocked: $scope.selectedIsBlocked.id,
+                        active: $scope.selectedIsActive.id,
+                        firstName: $scope.FirstName,
+                        lastName: $scope.LastName,
+                        email: $scope.Email
+                    },
+                    Id: "Id"
+                };
+                var gridDataAdapter = new $.jqx.dataAdapter(source, {
+                    loadComplete: function (data) {
+                        $('#gridMain').unblock();
+                    }
+                });
+                $scope.gridSettings.source = gridDataAdapter;
+            };
+
+            $scope.onSearchClick = function (event) {
+                bindGrid();
+            };
+
+            bindGrid();
+        });
+    </script>
+}
+

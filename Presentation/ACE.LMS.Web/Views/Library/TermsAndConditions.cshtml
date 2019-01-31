@@ -1,0 +1,136 @@
+﻿@model ACE.LMS.Web.Models.TermsAndConditionViewModel
+@{
+    ViewBag.Title = "Terms And Conditions";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div style="color: #ff6a00;">
+    <h2>@ViewBag.Title</h2>
+    </div>
+    @using (Html.BeginForm("TermsAndConditions", "Library", new { ReturnUrl = ViewBag.ReturnUrl }, FormMethod.Post, new { @id = "frmMain", @class = "form-horizontal", role = "form" }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class="col-lg-12">
+            <div class="row" ng-app="ABBApp">
+                <fieldset>
+                    <legend><span style="font-weight: bold; font-style: italic;">Important:</span></legend>
+                    This is first time process. In order to request books from anavil book bank you must need to aggree with our tearms and condition.
+                    <br />
+                    Here's how you do that:
+                    <ol type="1">
+                        <li>Fill in all requested information below.</li>
+                        <li>Click on 'Print' button to take print out of this agreement. You will have to sign it and bring with you when you come first time to collact your books</li>
+                        <li>Click on 'I Agree' button to agree with our tearms and conditions below.</li>
+                        <li>If you want you may take print out letter but you must click on 'I Agree' button to submit your book request. Go to Student Menu -> Terms and Conditions to re-visit this page again.</li>
+
+                    </ol>
+                </fieldset>
+                <hr />
+                <div id="divMain">
+                    <div class="text-center">
+                        <h2>Anavil Book Bank (ABB)</h2>
+
+                        <p><b><i>An initiative by Kaushik Naik – Assisting deserving Anvil students</i></b></p>
+                        <p><b>c/o Assocaited Consultimng Engineers, 7 Anukul apartment Tithal road, Valsad 396001 ,www.acepolytech.com</b></p>
+                    </div>
+                    <div class="col-md-12" ng-controller="tncController">
+                        <p id="uiDetails" ng_hide="PrintMode">
+                            I @Html.TextBoxFor(m => m.FullName, new { @id = "txtFirstName", ng_hide = "PrintMode", ng_model = "FullName", @class = "form-control", placeholder = "Your Name" }) @Html.ValidationMessageFor(m => m.FullName, "", new { @class = "text-danger" })
+                            daughter / son of @Html.TextBoxFor(m => m.FatherName, new { @id = "txtFatherName", ng_hide = "PrintMode", ng_model = "FatherName", @class = "form-control", placeholder = "Father Name" }) @Html.ValidationMessageFor(m => m.FatherName, "", new { @class = "text-danger" })
+                            resident of @Html.TextBoxFor(m => m.Address, new { @id = "txtAddress", ng_hide = "PrintMode", ng_model = "Address", @class = "form-control", placeholder = "Address" }) @Html.ValidationMessageFor(m => m.Address, "", new { @class = "text-danger" })
+                            Persuing degree / diploma in @Html.TextBoxFor(m => m.Degree, new { @id = "txtDegree", ng_hide = "PrintMode", ng_model = "Degree", @class = "form-control", placeholder = "Degree or Diploma in" }) @Html.ValidationMessageFor(m => m.Degree, "", new { @class = "text-danger" }) in @Html.TextBoxFor(m => m.College, new { @id = "txtCollege", ng_hide = "PrintMode", ng_model = "College", @class = "form-control", placeholder = "College/School" }) @Html.ValidationMessageFor(m => m.College, "", new { @class = "text-danger" }) express my desire to avail facility provided by Anavil Book Bank Valsad 396001. I understand this is non-commercial – non-profit initiative by organiser.
+                        </p>
+                        <p ng-show="PrintMode">
+                            I <b><u><i>{{FullName}}</i></u></b> son of <b><u><i>{{FatherName}}</i></u></b> resident of <b><u><i>{{Address}}</i></u></b> Persuing degree / diploma in <b><u><i>{{Degree}}</i></u></b> in <b><u><i>{{College}}</i></u></b> express my desire to avail facility provided by Anavil Book Bank Valsad 396001. I understand this is non-commercial – non-profit initiative by organiser.
+                        </p>
+                        <p>I agree to abide by following rules.</p>
+                        <p>
+                            <ol type="1">
+                                <li>I will take good care of books issued to me.</li>
+                                <li>In case books are lost / damaged, I will replace them with same or latest available new book without any arguments.</li>
+                                <li>All books issued to me shall be returned in good condition within one week of completion of my exams to a place as may be instructed from time to time.</li>
+                                <li>I will submit my mark sheet copy as soon as the results are declared before availing fresh set of books.</li>
+                                <li>
+                                    I understand that :
+                                    <ol type="a">
+                                        <li>ABB has right to recall books anytime without assigning any reason and I undertake to be abide by it</li>
+                                        <li>ABB has right to call my family member / reference person on any issue related to borrowing book and my academics.</li>
+                                        <li>ABB has exclusive rights to change rules for administration of book bank.</li>
+                                    </ol>
+                                </li>
+                                <li>As a benefitiary of ABB, I understand that this does not create any legal relationship like consumer.</li>
+                            </ol>
+                        </p>
+                        <p>&nbsp;</p>
+                        <div class="col-md-12">
+                            <div class="col-md-6">_______________</div>
+                            <div class="col-md-6 text-right">_______________</div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="col-md-6">{{FullName}}</div>
+                            <div class="col-md-6 text-right">Place and Date</div>
+                        </div>
+                        <hr />
+                        <br />
+                        @*<p>
+                                <jqx-check-box name="IsAgree" ng-hide="PrintMode">I {{FullName}}, agree with all above tearms and ... </jqx-check-box>
+                            </p>
+                        *@
+                        <div id="divButtons" class="col-md-12 text-right">
+                            <jqx-button id="btnPrint" ng-hide="PrintMode" jqx-width="100" jqx-height="30" jqx-theme="theme" jqx-on-click="onPrint()" type="button">Print</jqx-button>
+                            <jqx-button id="btnSubmit" ng-hide="PrintMode" jqx-width="100" jqx-height="30" jqx-theme="theme" type="submit">I Agree</jqx-button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    @section Scripts {
+        @Scripts.Render("~/bundles/jqueryval")
+        <script type="text/javascript" language="javascript">
+            var abbApp = angular.module("ABBApp", ["jqwidgets"]).factory('$exceptionHandler', function () {
+                return function (exception, cause) {
+                    exception.message += ' (caused by "' + cause + '")';
+                    alert(exception.message);
+                }
+            });
+            abbApp.controller("tncController", function ($scope) {
+                $scope.theme = getTheme();
+                $scope.PrintMode = false;
+
+                //$('#txtFirstName').style.visibility = 'hidden';
+                $scope.onPrint = function () {
+
+                    var $form = $('#frmMain');
+                    ////alert($form.valid());
+                    if (!$form.valid())
+                        return;
+
+                    $scope.PrintMode = true;
+
+                    $('#uiDetails').prop("style").display = 'none';
+                    $('#divButtons').prop("style").display = 'none';
+
+                    var data = $('#divMain').html();
+                    var newWindow = window.open('', '', 'width=612, height=650'),
+                            document = newWindow.document.open(),
+                            pageContent =
+                                '<!DOCTYPE html>\n' +
+                                '<html>\n' +
+                                '<head>\n' +
+                                '<meta charset="utf-8" />\n' +
+                                '<title>Tearms & Conditions</title>\n' +
+                                '<link href="/Content/bootstrap.css" rel="stylesheet" type="text/css" />' +
+                                '</head>\n' +
+                                '<body>\n' + data + '\n</body>\n</html>';
+                    document.write(pageContent);
+                    document.close();
+                    newWindow.print();
+                    $('#uiDetails').prop("style").display = 'block';
+                    $('#divButtons').prop("style").display = 'block';
+                    $scope.PrintMode = false;
+                };
+            });
+        </script>
+    }

@@ -1,0 +1,215 @@
+﻿@{
+    ViewBag.Title = "BookMaintenance";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="col-lg-12">
+    <div style="color: #ff6a00;"><h2>Book Maintenance</h2></div>
+    <div id="divMain" class="row" ng-app="ABBApp">
+        <div id="divController" ng-controller="userController">
+            <fieldset>
+                <legend></legend>
+                <jqx-button id="btnAddNew" jqx-on-click="onAddNewClick(event)" jqx-settings="addNewButtonSettings" ng-show="ShowCommandButton">Add New</jqx-button>
+                <jqx-button id="btnRefresh" jqx-on-click="onRefresh(event)" jqx-settings="addNewButtonSettings" ng-show="ShowCommandButton">Refresh</jqx-button>
+                <jqx-grid id="gridMain" jqx-settings="gridSettings"></jqx-grid>
+            </fieldset>
+            <jqx-window jqx-settings="jqxWindowSettings">
+                <div>
+                    <b>{{WindowTitle}}</b>
+                </div>
+                <div id="frmMain">
+                    @using (Ajax.BeginForm("SaveBook", "Admin", new AjaxOptions
+                    {
+                        OnSuccess = "onSuccess",
+                        OnBegin = "onBegin",
+                        OnFailure = "onFailure"
+                    }, new { @class = "form-horizontal", role = "form" }))
+                    {
+
+                    }
+                </div>
+            </jqx-window>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+
+    <script type="text/javascript" language="javascript">
+        var abbApp = angular.module("ABBApp", ["jqwidgets"]).factory('$exceptionHandler', function () {
+            return function (exception, cause) {
+                exception.message += ' (caused by "' + cause + '")';
+                console.log(exception, cause);
+                //alert(exception.message);
+                throw exception;
+            }
+        });
+        abbApp.controller("userController", function ($scope, $http) {
+            $scope.createWidget = false;
+            $scope.theme = getTheme();
+            $scope.ShowCommandButton = false;
+
+            $scope.gridSettings =
+            {
+                theme: $scope.theme,
+                altrows: true,
+                width: '100%',
+                sortable: true,
+                editable: true,
+                columns: [
+                        { text: 'Title', datafield: 'Title' },
+                        { text: 'Author', datafield: 'Author', width: '200' },
+                        { text: 'Publication', datafield: 'Publication', width: '200' },
+                        { text: 'Approved', datafield: 'ApprovedBooks', width: '60' },
+                        { text: 'Issued', datafield: 'IssuedBooks', width: '40' },
+                        { text: 'Torn', datafield: 'TornBooks', width: '40' },
+                        { text: 'Available', datafield: 'AvailableBooks', width: '60' },
+                        { text: 'Total', datafield: 'TotalBooks', width: '40' },
+                        {
+                            text: 'Edit', datafield: 'Edit', width: 60, columntype: 'button', cellsrenderer: function () { return "Edit"; },
+                            buttonclick: function (row) {
+                                // open the popup window when the user clicks a button.
+                                //debugger;
+                                var offset = $("#gridMain").offset();
+                                // get the clicked row's data and initialize the input fields.
+                                var dataRecord = $("#gridMain").jqxGrid('getrowdata', row);
+
+                                // show the popup window.
+                                $scope.jqxWindowSettings.jqxWindow('open');
+                                $scope.WindowTitle = 'Edit Book';
+                                $scope.Id = dataRecord.Id;
+                                //$scope.SaveMessage = '';
+                        }
+                       }
+                ],
+                showtoolbar: true,
+                //autorowheight: true,
+                autoheight: true,
+                rendertoolbar: function (toolbar) {
+                    var container = $("<div class='col-md-12' style='margin-top: 3px;'></div>");
+                    var input = $("#btnAddNew");
+                    var refreshInput = $("#btnRefresh");
+                    var addNewContainer = $("<div class='col-md-6 text-left'></div>");
+                    var refreshContainer = $("<div class='col-md-6 text-right'></div>");
+                    toolbar.append(container);
+                    addNewContainer.append(input);
+                    refreshContainer.append(refreshInput);
+                    toolbar.append(addNewContainer)
+                    toolbar.append(refreshContainer)
+                },
+                bindingcomplete: function () {
+                    $scope.ShowCommandButton = true;
+                }
+            }
+
+            var bindGrid = function () {
+                $('#gridMain').blockElement({ showImage: false });
+                var source = {
+                    datatype: "json",
+                    type: "POST",
+                    datafields: [
+                        { name: 'Id', type: 'int' },
+                        { name: 'Title', type: 'string' },
+                        { name: 'Author', type: 'string' },
+                        { name: 'Subject', type: 'string' },
+                        { name: 'Publication', type: 'string' },
+                        { name: 'IsNewRequest', type: 'bool' },
+                        { name: 'ApprovedBooks', type: 'int' },
+                        { name: 'TotalBooks', type: 'int' },
+                        { name: 'NewApprovedBooks', type: 'int' },
+                        { name: 'IssuedBooks', type: 'int' },
+                        { name: 'TornBooks', type: 'int' },
+                        { name: 'AvailableBooks', type: 'int' }
+                    ],
+                    url: '/Admin/GetAllBooks',
+                    Id: "Id"
+                };
+                var gridDataAdapter = new $.jqx.dataAdapter(source, {
+                    loadComplete: function (data) {                        
+                        $('#gridMain').unblock();
+                    }
+                });
+                $scope.gridSettings.source = gridDataAdapter;
+            };
+
+            bindGrid();
+
+            $scope.jqxWindowSettings = {
+                height: 400, width: 600,
+                theme: $scope.theme,
+                resizable: false,
+                isModal: true,
+                autoOpen: false,
+                modalOpacity: 0.3,
+                open: function (event) {
+                    //alert('open');
+                }
+            };
+
+            $scope.addNewButtonSettings = {
+                theme: $scope.theme,
+                height: 25,
+                width: 100
+            };
+
+            $scope.onAddNewClick = function (event) {
+                $scope.WindowTitle = 'Add Book';
+                $scope.Id = 0;
+                $scope.jqxWindowSettings.jqxWindow('open');
+            }
+
+            $scope.onRefresh = function (event) {
+                bindGrid();
+            }
+
+            $scope.onSave = function () {
+                $scope.SaveMessage = 'Data saved successfully.';
+                bindGrid();
+
+                //if ($('#frmMain').valid()) {
+
+                //}
+                //else {
+                //    alert('Not Saved');
+                //}
+            }
+            $scope.createWidget = true;
+        });
+
+        var onBegin = function () {
+            $('#frmMain').blockElement({ showImage: true });
+        }
+
+        var onSuccess = function (response) {
+            $('#frmMain').unblock();
+            if (response.MsgType == 1 || response.MsgType == 4) {
+                //Error
+                $.each(response.Messages, function (index, value) {
+                    //alert(index + ": " + value);
+                    displayBarNotification(value, 'error', 15);
+
+                    $('html, body').animate({
+                        'scrollTop': $("#container").position().top - 50
+                    });
+                });
+            }
+            else if (response.MsgType == 2) {
+                // Success
+                var scope = angular.element(document.getElementById("divController")).scope();
+                scope.$apply(function () {
+                    scope.onSave();
+                });
+
+            }
+        }
+
+        var onFailure = function (error) {
+            displayBarNotification('Oops! Unexptected error occured. Please contact administrator.', 'error', 15);
+
+            $('html, body').animate({
+                'scrollTop': $("#container").position().top - 50
+            });
+        }
+    </script>
+}
+

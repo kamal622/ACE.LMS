@@ -1,0 +1,66 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Libraries", "Libraries", "{777AC3B5-0FD8-4C80-A92B-22869B62C172}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Presentation", "Presentation", "{28E02804-8F51-4041-A5B8-F126A8C1F3F5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ACE.LMS.Web", "Presentation\ACE.LMS.Web\ACE.LMS.Web.csproj", "{C7CEDCE2-FFEF-4CEF-B948-35922E129E20}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ACE.LMS.Core", "Libraries\ACE.LMS.Core\ACE.LMS.Core.csproj", "{1C45DEE4-0136-4CE3-AC30-4FD719DCFB51}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ACE.LMS.Data", "Libraries\ACE.LMS.Data\ACE.LMS.Data.csproj", "{3EBB8C15-E717-4B51-9F70-3D04E0686320}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ACE.LMS.Services", "Libraries\ACE.LMS.Services\ACE.LMS.Services.csproj", "{5579C263-FD4C-401A-8910-3964D0419581}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ACE.LMS.Fake", "Libraries\ACE.LMS.Fake\ACE.LMS.Fake.csproj", "{4C67CAE9-EE0E-41A9-A582-896E9E36333C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ACE.LMS.Web.Framework", "Presentation\ACE.LMS.Web.Framework\ACE.LMS.Web.Framework.csproj", "{E1BC6477-64C5-4685-AEEF-83CA011B3BE6}"
+EndProject
+Global
+	GlobalSection(SubversionScc) = preSolution
+		Svn-Managed = True
+		Manager = AnkhSVN - Subversion Support for Visual Studio
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C7CEDCE2-FFEF-4CEF-B948-35922E129E20}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C7CEDCE2-FFEF-4CEF-B948-35922E129E20}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C7CEDCE2-FFEF-4CEF-B948-35922E129E20}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C7CEDCE2-FFEF-4CEF-B948-35922E129E20}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1C45DEE4-0136-4CE3-AC30-4FD719DCFB51}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1C45DEE4-0136-4CE3-AC30-4FD719DCFB51}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1C45DEE4-0136-4CE3-AC30-4FD719DCFB51}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1C45DEE4-0136-4CE3-AC30-4FD719DCFB51}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3EBB8C15-E717-4B51-9F70-3D04E0686320}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3EBB8C15-E717-4B51-9F70-3D04E0686320}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3EBB8C15-E717-4B51-9F70-3D04E0686320}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3EBB8C15-E717-4B51-9F70-3D04E0686320}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5579C263-FD4C-401A-8910-3964D0419581}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5579C263-FD4C-401A-8910-3964D0419581}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5579C263-FD4C-401A-8910-3964D0419581}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5579C263-FD4C-401A-8910-3964D0419581}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4C67CAE9-EE0E-41A9-A582-896E9E36333C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4C67CAE9-EE0E-41A9-A582-896E9E36333C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4C67CAE9-EE0E-41A9-A582-896E9E36333C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4C67CAE9-EE0E-41A9-A582-896E9E36333C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E1BC6477-64C5-4685-AEEF-83CA011B3BE6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E1BC6477-64C5-4685-AEEF-83CA011B3BE6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E1BC6477-64C5-4685-AEEF-83CA011B3BE6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E1BC6477-64C5-4685-AEEF-83CA011B3BE6}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{1C45DEE4-0136-4CE3-AC30-4FD719DCFB51} = {777AC3B5-0FD8-4C80-A92B-22869B62C172}
+		{3EBB8C15-E717-4B51-9F70-3D04E0686320} = {777AC3B5-0FD8-4C80-A92B-22869B62C172}
+		{5579C263-FD4C-401A-8910-3964D0419581} = {777AC3B5-0FD8-4C80-A92B-22869B62C172}
+		{4C67CAE9-EE0E-41A9-A582-896E9E36333C} = {777AC3B5-0FD8-4C80-A92B-22869B62C172}
+		{C7CEDCE2-FFEF-4CEF-B948-35922E129E20} = {28E02804-8F51-4041-A5B8-F126A8C1F3F5}
+		{E1BC6477-64C5-4685-AEEF-83CA011B3BE6} = {28E02804-8F51-4041-A5B8-F126A8C1F3F5}
+	EndGlobalSection
+EndGlobal

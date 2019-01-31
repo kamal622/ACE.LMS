@@ -1,0 +1,308 @@
+﻿@using ACE.LMS.Core.Models.Library
+@model NoticeBoard
+
+@{
+    ViewBag.Title = "Noticeboard";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="col-lg-12">
+    <div style="color: #ff6a00;"><h2>Noticeboard</h2></div>
+    <div id="divMain" class="row" ng-app="ABBApp">
+        <div id="divController" ng-controller="userController">
+            <fieldset>
+                <legend></legend>
+                <jqx-button id="btnAddNew" jqx-on-click="onAddNewClick(event)" jqx-settings="addNewButtonSettings" ng-show="ShowCommandButton">Add New</jqx-button>
+                <jqx-button id="btnRefresh" jqx-on-click="onRefresh(event)" jqx-settings="addNewButtonSettings" ng-show="ShowCommandButton">Refresh</jqx-button>
+                <jqx-grid id="gridMain" jqx-settings="gridSettings"></jqx-grid>
+            </fieldset>
+            <jqx-window id="jqxWindowFeedback" jqx-settings="jqxWindowSettings">
+                <div>
+                    <b>{{WindowTitle}}</b>
+                </div>
+                <div id="frmMain">
+                    @using (Ajax.BeginForm("SaveNotice", "Admin", new AjaxOptions
+                    {
+                        OnSuccess = "onSuccess",
+                        OnBegin = "onBegin",
+                        OnFailure = "onFailure"
+                    }, new { @class = "form-horizontal", role = "form" }))
+                    {
+                        @Html.TextBoxFor(m => m.Id, new { ng_model = "Id", @style = " visibility: hidden;height: 0;width: 0;" })
+
+                        <div class="col-md-12 row">
+                            <div class="form-group">
+                                @Html.LabelFor(m => m.Title, new { @class = "col-md-2 control-label" })
+                                <div class="col-md-10">
+                                    @Html.TextBoxFor(m => m.Title, new { @class = "form-control", ng_model = "Title" })
+                                    @Html.ValidationMessageFor(m => m.Title, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                @Html.LabelFor(m => m.Description, new { @class = "col-md-2 control-label" })
+                                <div class="col-md-10">
+                                    @Html.TextAreaFor(m => m.Description, new { @class = "form-control", ng_model = "Description", @rows = 7 })
+                                    @Html.ValidationMessageFor(m => m.Description, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                @Html.LabelFor(m => m.StartDate, new { @class = "col-md-2 control-label" })
+                                <div class="col-md-4">
+                                    <jqx-date-time-input ng-model="StartDate" jqx-settings="startDateInputSettings"></jqx-date-time-input>
+                                    @Html.ValidationMessageFor(m => m.StartDate, "", new { @class = "text-danger" })
+                                    @Html.TextBoxFor(m => m.StartDate, "{0:dd/MM/yyyy}", new { type = "datetime-local", ng_model = "StartDate", @style = " visibility: hidden;height: 0;width: 0;" })
+                                </div>
+                                @Html.LabelFor(m => m.EndDate, new { @class = "col-md-2 control-label" })
+                                <div class="col-md-4">
+                                    <jqx-date-time-input ng-model="EndDate" jqx-settings="endDateInputSettings"></jqx-date-time-input>
+                                    @Html.TextBoxFor(m => m.EndDate, "{0:dd/MM/yyyy}", new { type = "datetime-local", ng_model = "EndDate", @style = " visibility: hidden;height: 0;width: 0;" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                @Html.LabelFor(m => m.IsActive, new { @class = "col-md-2 control-label" })
+                                <div class="col-md-8" style="padding-top: 7px;">
+                                    @Html.CheckBoxFor(m => m.IsActive, new { ng_model = "IsActive", jqx_theme = "theme" })
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-12 text-right">
+                            @*<jqx-button jqx-theme="theme" jqx-width="100" jqx-height="25" jqx-on-click="onSave(event)">Save</jqx-button>*@
+                            <jqx-button jqx-theme="theme" jqx-width="100" jqx-height="25">Save</jqx-button>
+                        </div>
+                        <div class="col-md-12 text-danger">
+                            {{SaveMessage}}
+                        </div>
+                    }
+                </div>
+            </jqx-window>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+
+    <script type="text/javascript" language="javascript">
+        var abbApp = angular.module("ABBApp", ["jqwidgets"]).factory('$exceptionHandler', function () {
+            return function (exception, cause) {
+                exception.message += ' (caused by "' + cause + '")';
+                console.log(exception, cause);
+                //alert(exception.message);
+                throw exception;
+            }
+        });
+        abbApp.controller("userController", function ($scope, $http) {
+            $scope.theme = getTheme();
+            $scope.WindowTitle = 'Add Notice';
+            $scope.Id = 0;
+            $scope.Title = '';
+            $scope.Description = '';
+            $scope.StartDate = new Date();
+            $scope.EndDate = new Date();
+            $scope.IsActive = true;
+            $scope.SaveMessage = '';
+            $scope.ShowCommandButton = false;
+
+            $scope.gridSettings =
+            {
+                theme: $scope.theme,
+                altrows: true,
+                width: '100%',
+                sortable: true,
+                editable: true,
+                columns: [
+                    { text: 'Title', datafield: 'Title', editable: false, width: 200 },
+                    { text: 'Description', datafield: 'Description', editable: false },
+                    { text: 'Start Date', datafield: 'StartDate', width: 80, cellsformat: 'dd/MM/yyyy', editable: false },
+                    { text: 'End Date', datafield: 'EndDate', width: 80, cellsformat: 'dd/MM/yyyy', editable: false },
+                    { text: 'Active', datafield: 'IsActive', columntype: 'checkbox', width: 50 },
+                    { text: 'Created Date', datafield: 'CreatedDate', width: 80, cellsformat: 'dd/MM/yyyy', editable: false },
+                    {
+                        text: 'Edit', datafield: 'Edit', width: 70, columntype: 'button', cellsrenderer: function () { return "Edit"; },
+                        buttonclick: function (row) {
+                            // open the popup window when the user clicks a button.
+                            //debugger;
+                            var offset = $("#gridMain").offset();
+                            // get the clicked row's data and initialize the input fields.
+                            var dataRecord = $("#gridMain").jqxGrid('getrowdata', row);
+
+                            // show the popup window.
+                            $scope.jqxWindowSettings.jqxWindow('open');
+                            $scope.WindowTitle = 'Edit Notice';
+                            $scope.Id = dataRecord.Id;
+                            $scope.Title = dataRecord.Title;
+                            $scope.Description = dataRecord.Description;
+                            $scope.StartDate = dataRecord.StartDate;
+                            $scope.EndDate = dataRecord.EndDate;
+                            $scope.IsActive = dataRecord.IsActive;
+                            $scope.SaveMessage = '';
+                        }
+                    }
+                ],
+                showtoolbar: true,
+                autorowheight: true,
+                autoheight: true,
+                rendertoolbar: function (toolbar) {
+                    var container = $("<div class='col-md-12' style='margin-top: 3px;'></div>");
+                    var input = $("#btnAddNew");
+                    var refreshInput = $("#btnRefresh");
+                    var addNewContainer = $("<div class='col-md-6 text-left'></div>");
+                    var refreshContainer = $("<div class='col-md-6 text-right'></div>");
+                    toolbar.append(container);
+                    addNewContainer.append(input);
+                    refreshContainer.append(refreshInput);
+                    toolbar.append(addNewContainer)
+                    toolbar.append(refreshContainer)
+                },
+                bindingcomplete: function () {
+                    $scope.ShowCommandButton = true;
+                }
+            }
+
+            var bindGrid = function () {
+                $('#gridMain').blockElement({ showImage: false });
+                var source = {
+                    datatype: "json",
+                    type: "POST",                    
+                    updaterow: function (rowid, rowdata, commit) {
+                        // synchronize with the server - send update command
+                        // call commit with parameter true if the synchronization with the server is successful
+                        // and with parameter false if the synchronization failder.
+                        $('#gridMain').blockElement({ showImage: true });
+                        $http.post('/Admin/ActiveInactiveNotice', { noticeId: rowdata.Id, isActive: rowdata.IsActive })
+                            .success(function (data) {
+                                commit((data.MsgType == 2));
+                                $('#gridMain').unblock();
+                            }).error(function (data, status, headers, config) {
+                                commit(false);
+                                $('#gridMain').unblock();
+                            });
+
+                    },
+                    datafields: [
+                        { name: 'Id', type: 'int' },
+                        { name: 'Title', type: 'string' },
+                        { name: 'Description', type: 'string' },
+                        { name: 'StartDate', type: 'date', format: 'dd/MM/yyyy' },
+                        { name: 'EndDate', type: 'date', format: 'dd/MM/yyyy' },
+                        { name: 'IsActive', type: 'bool' },
+                        { name: 'CreatedBy', type: 'string' },
+                        { name: 'CreatedDate', type: 'date', format: 'dd/MM/yyyy' }
+                    ],
+                    url: '/Admin/GetAllNotice',
+                    Id: "Id"
+                };
+                var gridDataAdapter = new $.jqx.dataAdapter(source, {
+                    loadComplete: function (data) {
+                        $('#gridMain').unblock();
+                    }
+                });
+                $scope.gridSettings.source = gridDataAdapter;
+            };
+
+            bindGrid();
+
+            $scope.jqxWindowSettings = {
+                height: 400, width: 600,
+                theme: $scope.theme,
+                resizable: false,
+                isModal: true,
+                autoOpen: false,
+                modalOpacity: 0.3,
+                open: function (event) {
+                    //alert('open');
+                }
+            };
+
+            $scope.addNewButtonSettings = {
+                theme: $scope.theme,
+                height: 25,
+                width: 100
+            };
+
+            $scope.startDateInputSettings = {
+                width: 150,
+                height: 30,
+                //formatString: 'dd/MM/yyyy',
+                min: new Date().addDays(-1),
+                theme: $scope.theme,
+                change: function (event) {
+                    $scope.endDateInputSettings.jqxDateTimeInput('setMinDate', event.args.date.addDays(-1));
+                }
+            }
+
+            $scope.endDateInputSettings = {
+                width: 150,
+                height: 30,
+                //formatString: 'dd/MM/yyyy',
+                min: new Date().addDays(-1),
+                theme: $scope.theme
+            }
+
+            $scope.onAddNewClick = function (event) {
+                $scope.WindowTitle = 'Add Notice';
+                $scope.Id = 0;
+                $scope.Title = '';
+                $scope.Description = '';
+                $scope.SaveMessage = '';
+                //$scope.StartDate = new Date();
+                //$scope.EndDate = new Date();
+                $scope.startDateInputSettings.jqxDateTimeInput('setDate', new Date())
+                $scope.endDateInputSettings.jqxDateTimeInput('setDate', new Date().addMonths(1))
+                $scope.IsActive = true;
+                $scope.jqxWindowSettings.jqxWindow('open');
+            }
+
+            $scope.onRefresh = function (event) {
+                bindGrid();
+            }
+
+            $scope.onSave = function () {
+                $scope.SaveMessage = 'Data saved successfully.';
+                bindGrid();
+
+                //if ($('#frmMain').valid()) {
+
+                //}
+                //else {
+                //    alert('Not Saved');
+                //}
+            }
+        });
+
+        var onBegin = function () {
+            $('#frmMain').blockElement({ showImage: true });
+        }
+
+        var onSuccess = function (response) {
+            $('#frmMain').unblock();
+            if (response.MsgType == 1 || response.MsgType == 4) {
+                //Error
+                $.each(response.Messages, function (index, value) {
+                    //alert(index + ": " + value);
+                    displayBarNotification(value, 'error', 15);
+
+                    $('html, body').animate({
+                        'scrollTop': $("#container").position().top - 50
+                    });
+                });
+            }
+            else if (response.MsgType == 2) {
+                // Success
+                var scope = angular.element(document.getElementById("divController")).scope();
+                scope.$apply(function () {
+                    scope.onSave();
+                });
+
+            }
+        }
+
+        var onFailure = function (error) {
+            displayBarNotification('Oops! Unexptected error occured. Please contact administrator.', 'error', 15);
+
+            $('html, body').animate({
+                'scrollTop': $("#container").position().top - 50
+            });
+        }
+    </script>
+}
+

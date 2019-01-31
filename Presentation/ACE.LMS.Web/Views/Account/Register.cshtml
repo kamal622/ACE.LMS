@@ -1,0 +1,55 @@
+﻿@model ACE.LMS.Web.Models.RegisterViewModel
+@{
+    ViewBag.Title = "Register";
+}
+
+<div class="col-lg-12">
+    <div style="color: #ff6a00;">
+        <h2>@ViewBag.Title</h2>
+    </div>
+    <br />
+    @using (Html.BeginForm("Register", "Account", FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
+    {
+        @Html.AntiForgeryToken()
+
+        <ul>
+            <li><p>Create your account to request books using your active Email ID. Later this ID will be used for further communication.</p></li>
+            <li><p>Password must be atleast 6 characters long.</p></li>
+            <li><p>Passwords must have at least one digit ('0'-'9'), one uppercase ('A'-'Z') and one special character (!, @@, #, %, $). ex. Blue@123.</p></li>
+        </ul>
+        <br />
+        @Html.ValidationSummary("", new { @class = "text-danger" })
+        <div class="form-group">
+            @Html.LabelFor(m => m.Email, new { @class = "col-md-2 control-label" })
+            <div class="col-md-4">
+                @Html.TextBoxFor(m => m.Email, new { @class = "form-control" })
+            </div>
+        </div>
+         <div class="form-group">
+            @Html.LabelFor(m => m.PhoneNumber, new { @class = "col-md-2 control-label" })
+            <div class="col-md-4">
+                @Html.TextBoxFor(m => m.PhoneNumber, new { @class = "form-control" })
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(m => m.Password, new { @class = "col-md-2 control-label" })
+            <div class="col-md-4">
+                @Html.PasswordFor(m => m.Password, new { @class = "form-control" })
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(m => m.ConfirmPassword, new { @class = "col-md-2 control-label" })
+            <div class="col-md-4">
+                @Html.PasswordFor(m => m.ConfirmPassword, new { @class = "form-control" })
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="submit" class="btn btn-default" value="Register" />
+            </div>
+        </div>
+    }
+</div>
+    @section Scripts {
+        @Scripts.Render("~/bundles/jqueryval")
+    }

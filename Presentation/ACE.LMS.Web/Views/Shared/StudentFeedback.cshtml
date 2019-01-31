@@ -1,0 +1,57 @@
+﻿@model ACE.LMS.Web.Models.StudentFeedBackViewModel
+@using (Ajax.BeginForm("StudentFeedBack", "Library", new AjaxOptions
+                {
+                    OnSuccess = "onFeedbackSuccess",
+                    OnBegin = "onFeedbackBegin",
+                    OnFailure = "onFeedbackFailure"
+                }, new { @class = "form-horizontal", role = "form" }))
+{
+    @Html.AntiForgeryToken()
+    <div id="divFeedback" class="col-md-12">
+        <ol type="1">
+            <li class="feedbackli">
+                <span class="feedbacklispan">
+                    @Html.LabelFor(m => m.isLike)
+                    <div class="checkbox">
+                        @Html.RadioButtonFor(m => m.isLike, true) Yes
+                        @Html.RadioButtonFor(m => m.isLike, false) No
+                        @Html.ValidationMessageFor(m => m.isLike, "", new { @class = "text-danger" })
+                    </div>
+                </span>
+            </li>
+            <li class="feedbackli">
+                <span class="feedbacklispan">
+                    @Html.LabelFor(m => m.IsLikeContribution)
+                    <div class="checkbox">
+                        @Html.RadioButtonFor(m => m.IsLikeContribution, true) Yes
+                        @Html.RadioButtonFor(m => m.IsLikeContribution, false) No
+                        @Html.ValidationMessageFor(m => m.IsLikeContribution, "", new { @class = "text-danger" })
+                    </div>
+                </span>
+            </li>
+            <li class="feedbackli">
+                <span class="feedbacklispan">
+                    @Html.LabelFor(m => m.IsLikeBookShare)
+                    <div class="checkbox">
+                        @Html.RadioButtonFor(m => m.IsLikeBookShare, true) Yes
+                        @Html.RadioButtonFor(m => m.IsLikeBookShare, false) No
+                        @Html.ValidationMessageFor(m => m.IsLikeBookShare, "", new { @class = "text-danger" })
+                    </div>
+                </span>
+            </li>
+            <li class="feedbackli">
+                <span class="feedbacklispan">
+                    @Html.LabelFor(m => m.IsLikeVoluntary)
+                    <div class="checkbox">
+                        @Html.RadioButtonFor(m => m.IsLikeVoluntary, true) Yes
+                        @Html.RadioButtonFor(m => m.IsLikeVoluntary, false) No
+                        @Html.ValidationMessageFor(m => m.IsLikeVoluntary, "", new { @class = "text-danger" })
+                    </div>
+                </span>
+            </li>
+        </ol>
+        <div class="text-right">
+            <jqx-button jqx-theme="theme">Submit</jqx-button>
+        </div>
+    </div>
+}

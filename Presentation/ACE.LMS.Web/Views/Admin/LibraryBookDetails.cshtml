@@ -1,0 +1,295 @@
+﻿@model dynamic
+
+@{
+    ViewBag.Title = "Book Details";
+ Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>@ViewBag.Title</h2>
+<div ng-app="myApp">
+    <div ng-controller="gridController">
+        <jqx-grid id="gridMain" jqx-settings="gridSettings"></jqx-grid>
+    </div>
+</div>
+
+<script>
+    var demoApp = angular.module("myApp", ["jqwidgets"]).factory('$exceptionHandler', function () {
+        return function (exception, cause) {
+            exception.message += ' (caused by "' + cause + '")';
+            throw exception;
+        }
+    });
+
+    demoApp.controller("gridController", function ($parse, $scope, $http) {
+        $scope.theme = getTheme();
+        $scope.createWidget = false;
+
+        $scope.statusData = [];
+        $scope.statusData.push({ id: 1, name: "Available" });
+        $scope.statusData.push({ id: 2, name: "Issued" });
+        $scope.statusData.push({ id: 2, name: "Torn" });
+
+        $scope.statusSettings = {
+            width: 200,
+            height: 30,
+            autoDropDownHeight: true,
+            displayMember: "name",
+            valueMember: "id",
+            theme: $scope.theme,
+            source: $scope.statusData
+        }
+
+        var bindGrid = function () {
+            var source = {
+                datatype: "json",
+                type: "POST",
+                datafields: [
+                    { name: 'Id', type: 'int' },
+                    { name: 'Title', type: 'string' },
+                    { name: 'Author', type: 'string' },
+                    { name: 'Subject', type: 'string' },
+                    { name: 'Publication', type: 'string' },
+                    { name: 'IsNewRequest', type: 'bool' },
+                    { name: 'ApprovedBooks', type: 'int' },
+                    { name: 'TotalBooks', type: 'int' },
+                    { name: 'NewApprovedBooks', type: 'int' },
+                    { name: 'IssuedBooks', type: 'int' },
+                    { name: 'TornBooks', type: 'int' },
+                    { name: 'AvailableBooks', type: 'int' }
+                ],
+                url: '/Admin/GetAllBooks',
+                Id: "Id"
+            };
+            var gridDataAdapter = new $.jqx.dataAdapter(source);
+            $scope.gridSettings.source = gridDataAdapter;
+        }
+
+        var initrowdetails = function (index, parentElement, gridElement, record) {
+            var id = record.uid.toString();
+            var grid = $($(parentElement).children()[0]);
+
+            var rowData = $scope.gridSettings.apply('getrowdata', index);
+
+            if (grid != null) {
+                grid.jqxGrid({
+                    //source: nestedAdapter,
+                    width: '97%',
+                    columnsresize: true,
+                    theme: $scope.theme,
+                    editable: true,
+                    editmode: 'dblclick',
+                    columns: [
+                            { text: "Id", datafield: "Id", hidden: true },
+                            { text: "BookId", datafield: "BookId", hidden: true },
+                            { text: "Accession No", datafield: "BookNo", width: '20%', editable: false },
+                            { text: 'ClassNo', datafield: 'ClassNo', width: '5%', editable: false },
+                            { text: "Price", datafield: "Price", width: '20%', editable: false },
+                            { text: "PurchaseDate", datafield: "PurchaseDate", editable: false },
+                            {
+                                text: "IsVerified", datafield: "IsVerified", editable: false, cellsrenderer: function (row, columnfield, value, defaulthtml, columnproperties) {
+                                    $scope.IssueStatus = value;
+                                    var dataRecord = grid.jqxGrid('getrowdata', row);
+                                    var LibraryBookId = dataRecord.Id;
+                                    // var BookId = dataRecord.BookId;
+                                    $parse("I_" + LibraryBookId).assign($scope, value);
+                                    return "  <div  style='text-align: center; margin-top: 5px;'><input type='checkbox' value=true ng-model='I_" + LibraryBookId + "' ng-change='Verify(" + LibraryBookId + "," + value + "," + rowData.Id + ", this)' ></div>";
+
+                                }
+                            },
+                            //{
+                            //    text: "Status", datafield: "Status", width: '20%', cellsrenderer: function (row, columnfield, value, defaulthtml, columnproperties) {
+
+                            //        var dataRecord = grid.jqxGrid('getrowdata', row);
+                            //        var LibraryBookId = dataRecord.Id;
+                            //        // var BookId = dataRecord.BookId;
+                            //        $parse("I_" + LibraryBookId).assign($scope, value);
+
+                            //     //   return "  <div style='text-align: center; margin-top: 5px;'><input type='checkbox' value=true ng-model='I_" + LibraryBookId + "' ng-change='Verify(" + LibraryBookId + "," + value + "," + rowData.Id + ")' ></div>";
+                            //        return " <jqx-drop-down-list ng-model='I_" + LibraryBookId + "' ng-theme='theme' jqx-settings='statusSettings' ng-change='changeStatus(" + LibraryBookId + "," + value + "," + rowData.Id + ")'></jqx-drop-down-list>";
+
+                            //    }
+                            //},
+                            {
+                                text: 'Status', datafield: 'Status', width: 150, editable: true, columntype: 'combobox',
+                                createeditor: function (row, column, editor) {
+                                    // assign a new data source to the combobox.
+                                    var list = ['Available', 'Issued', 'Torn'];
+                                    var statusData = [];
+                                    statusData.push({ id: 1, name: "Available" });
+                                    statusData.push({ id: 2, name: "Issued" });
+                                    statusData.push({ id: 3, name: "Torn" });
+                                    editor.jqxComboBox({ source: list, promptText: "Please Choose:" });
+                                },
+                                initeditor: function (row, column, editor) {
+
+                                    editor.jqxComboBox('selectIndex', 0);
+                                },
+                                // update the editor's value before saving it.
+                                cellvaluechanging: function (row, column, columntype, oldvalue, newvalue) {
+                                    // return the old value, if the new value is empty.
+                                   
+                                    var dataRecord = grid.jqxGrid('getrowdata', row);
+                                    var LibraryBookId = dataRecord.Id;
+                                    var bookId = dataRecord.bookId;
+
+                                   
+                                    if (newvalue == "") return oldvalue;
+                                    else {
+                                        var status = 0;
+                                        if (newvalue == "Available")
+                                            status = 1;
+                                        else if (newvalue == "Issued")
+                                            status = 2;
+                                        else if (newvalue == "Torn")
+                                            status = 3;
+                                        else
+                                            return oldvalue;
+
+
+                                        $('#gridMain').blockElement({ showImage: true });
+
+                                        $http.post('/Admin/changeLibraryBookStatus', { LibraryBookId: LibraryBookId, status: status, bookId: bookId, oldStatus: oldvalue }).success(function (retData) {
+                                            if (retData.Message == "Success") {
+                                                //  $scope.BookID = BookID;
+                                                // bindGrid();
+
+                                                //  grid.jqxGrid("updatebounddata");
+                                                // $($scope.currentGrid).jqxGrid("updatebounddata");
+                                                bindGrid();
+
+                                                $('#gridMain').unblock();
+
+                                            }
+
+                                        }).error(function (retData, status, headers, config) {
+                                            alert(data.toString());
+                                        });
+                                        return newvalue;
+                                    }
+
+                                }
+                            }]
+                });
+
+                // initialize the popup window and buttons.
+
+                $scope.Rebind = function () {
+                    var nestedSource = {
+                        datafields: [
+                           { name: 'Id', type: 'int' },
+                           { name: 'BookNo', type: 'string' },
+                           { name: 'ClassNo', type: 'int' },
+                           { name: 'Price', type: 'double' },
+                           { name: 'PurchaseDate', type: 'date', width: 120, cellsformat: 'dd/MM/yyyy' },
+                           { name: 'IsVerified', type: 'bool' },
+                           { name: 'bookId', type: 'int' },
+                           { name: 'Status', type: 'string' }
+                        ],
+                        datatype: 'json',
+
+                        type: 'POST',
+                        root: 'Details',
+                        url: '/Admin/GetLibraryBooksById',
+                        Id: "Id",
+                        data: { id: rowData.Id }
+                    };
+
+                    var nestedAdapter = new $.jqx.dataAdapter(nestedSource);
+                    grid.jqxGrid({
+                        source: nestedAdapter
+                    });
+                };
+
+                $scope.Rebind();
+            }
+        }
+
+        $scope.changeStatus = function (LibraryBookId, value, BookID) {
+            $http.post('/Admin/changeLibraryBookStatus', { LibraryBookId: LibraryBookId, status: value, bookId: BookID }).success(function (retData) {
+                if (retData.Message == "Success") {
+                    //  $scope.BookID = BookID;
+                    // bindGrid();
+
+                    //  grid.jqxGrid("updatebounddata");
+                    // $($scope.currentGrid).jqxGrid("updatebounddata");
+                }
+
+            }).error(function (retData, status, headers, config) {
+                alert(data.toString());
+            });
+        }
+
+        $scope.Verify = function (LibraryBookId, value, BookID, innerGrid) {
+            $('#gridMain').blockElement({ showImage: true });
+
+            $http.post('/Admin/VerifyLibraryBook', { LibraryBookId: LibraryBookId, value: value }).success(function (retData) {
+                if (retData.Message == "Success") {
+                    innerGrid.Rebind();
+                    $('#gridMain').unblock();
+
+                }
+            }).error(function (retData, status, headers, config) {
+                alert(data.toString());
+            });
+        }
+
+        $scope.gridSettings = {
+            width: '100%',
+            //source: $scope.booksData,
+            theme: $scope.theme,
+            columnsresize: true,
+            rowdetails: true,
+            rowsheight: 35,
+            columns: [
+                        { text: 'Id', datafield: 'Id', hidden: true },
+                        { text: 'Title', datafield: 'Title', width: '20%' },
+                        { text: 'Author', datafield: 'Author', width: '20%' },
+                        { text: 'Publication', datafield: 'Publication', width: '20%' },
+                        { text: 'ApprovedBooks', datafield: 'ApprovedBooks', width: '8%' },
+                        { text: 'IssuedBooks', datafield: 'IssuedBooks', width: '8%' },
+                        { text: 'TornBooks', datafield: 'TornBooks', width: '8%' },
+                        { text: 'AvailableBooks', datafield: 'AvailableBooks', width: '8%' },
+                        { text: 'TotalBooks', datafield: 'TotalBooks', width: '8%' }
+            ],
+            initrowdetails: initrowdetails,
+            rowdetailstemplate: {
+                rowdetails: "<div id='grid' style='margin: 10px;'></div>",
+                rowdetailsheight: 220,
+                rowdetailshidden: true
+            }
+            //,
+            //                bindingcomplete: function (event) {
+            //                    if ($scope.BookID <= 0)
+            //                        return;
+
+            //                    var index = -1;
+            //                    for (var i = 0, len = $scope.gridSettings.source.records.length; i < len; i++) {
+            //                        if ($scope.gridSettings.source.records[i].Id.toString() == $scope.BookID) {
+            //                            index = i;
+            //                            break;
+            //                        }
+            //                    }
+            //                    $scope.BookID = 0;
+            //                    // var rowIndex = $scope.gridSettings.apply('getrowboundindexbyid', $scope.bookRequestId);
+            //                    if (index >= 0)
+            //                        $scope.gridSettings.apply('showrowdetails', index);
+            //                }
+        };
+
+        //$scope.gridSettings.on('cellbeginedit', function (event) {
+        //    var args = event.args;
+
+        //            $("#cellbegineditevent").text("Event Type: cellbeginedit, Column: " + args.datafield + ", Row: " + (1 + args.rowindex) + ", Value: " + args.value);
+        //});
+
+        //$scope.gridSettings.on('cellendedit', function (event) {
+        //    var args = event.args;
+        //    
+        //            $("#cellendeditevent").text("Event Type: cellendedit, Column: " + args.datafield + ", Row: " + (1 + args.rowindex) + ", Value: " + args.value);
+        //        });
+
+        bindGrid();
+        $scope.createWidget = true;
+
+    });
+</script>

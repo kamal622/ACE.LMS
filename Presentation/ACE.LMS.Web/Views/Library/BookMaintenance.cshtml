@@ -1,0 +1,959 @@
+﻿@model ACE.LMS.Web.Models.BookMaintenance
+
+@{
+    ViewBag.Title = "BookMaintenance";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="col-lg-12">
+    <div style="color: #ff6a00;"><h2>Book Maintenance</h2></div>
+    <div id="divMain" class="row" ng-app="ABBApp">
+        <div id="divController" ng-controller="userController">
+            <fieldset>
+                <legend></legend>
+                <jqx-splitter jqx-settings="mainSplitterSettings">
+                    <div>
+                        <jqx-expander jqx-settings="expanderSettings">
+                            <div>
+                                Book Categories
+                            </div>
+                            <div style="overflow: hidden;">
+                                <jqx-tree id="treeMain" jqx-create="treeSettings" jqx-settings="treeSettings" style="border: none;">
+                                </jqx-tree>
+                            </div>
+                        </jqx-expander>
+                    </div>
+                    <div>
+                        <jqx-splitter jqx-settings="rightPanelSettings">
+                            <div>
+                                <table width="100%">
+                                    <tr>
+                                        <td>
+                                            <jqx-button-group jqx-settings="buttonGroupSettings" jqx-on-buttonclick="toolBarButtonClick(event)">
+                                                <button id="btnAddBook">
+                                                    <img width="16" height="16" src="/Content/Images/add-icon.png" />
+                                                </button>
+                                                <button id="btnEmail">
+                                                    <img alt="Send Email" width="16" height="16" src="/Content/Images/Send-file-icon.png" />
+                                                </button>
+                                                <button id="btnExportToExcel">
+                                                    <img alt="Export to Excel" width="16" height="16" src="/Content/Images/Microsoft-Office-Excel-icon.png" />
+                                                </button>
+                                                <button id="btnExportToCSV">
+                                                    <img alt="Export to CSV" width="16" height="16" src="/Content/Images/File-Types-Csv-icon.png" />
+                                                </button>
+                                                <button id="btnPrint">
+                                                    <img alt="Print" width="16" height="16" src="/Content/Images/Devices-Print-icon.png" />
+                                                </button>
+                                            </jqx-button-group>
+                                        </td>
+                                        <td width="180px">
+                                            <div id="txtSearch">
+                                                <input type="text" />
+                                                <div id="btnSearch" ng-click="btnSearchClick(event)">
+                                                    <img alt="search" width="16" height="16" src="/Content/Images/search_lg.png" />
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div>
+                                <jqx-splitter jqx-settings="rightBottomPanelSettings">
+                                    <div>
+                                        <jqx-loader jqx-settings="GridLoaderSettings">
+                                        </jqx-loader>
+                                        <jqx-grid id="gridMain" jqx-settings="gridSettings"></jqx-grid>
+                                    </div>
+                                    <div>
+                                        <jqx-tabs jqx-settings="jqxTabSettings">
+                                            <ul>
+                                                <li>Book Details</li>
+                                                <li>Tags</li>
+                                                <li>History</li>
+                                                <li>Note</li>
+                                            </ul>
+                                            <div style="margin-left: 5px;">
+                                                <jqx-grid id="gridDetails" jqx-settings="gridBookDetailsSettings"></jqx-grid>
+                                            </div>
+                                            <div style="margin-left: 5px;">
+                                                @*<textarea style="width:'99.7%'; height:'97%'"></textarea>*@
+                                                @Html.TextArea("KeyWords", new { @class = "form-control", @style = "width:99.7%; height:95%" })
+                                            </div>
+                                            <div style="margin-left: 5px;">
+
+                                            </div>
+                                            <div style="margin-left: 5px;">
+
+                                            </div>
+                                        </jqx-tabs>
+                                    </div>
+                                </jqx-splitter>
+                            </div>
+                        </jqx-splitter>
+                    </div>
+                </jqx-splitter>
+            </fieldset>
+            <jqx-window id="jqxWindowBook" jqx-settings="jqxWindowSettings">
+                <div>
+                    <b>{{WindowTitle}}</b>
+                </div>
+                <div>
+                    @using (Ajax.BeginForm("SaveBook", "Library", new AjaxOptions
+                    {
+                        OnSuccess = "onSuccess",
+                        OnBegin = "onBegin",
+                        OnFailure = "onFailure"
+                    }, new { @id = "frmMain", @class = "form-horizontal", role = "form" }))
+                    {
+                        @Html.AntiForgeryToken()
+                        @*@Html.HiddenFor(m => m.Book.Id, new { @ng_value = "bookId" })*@
+                        @Html.HiddenFor(m => m.LibraryBook.Id, new { @ng_value = "libraryBookId" })
+                        <div jqx-validator jqx-settings="validatorSettings">
+                            <div class="col-md-12">
+                                <fieldset>
+                                    <legend>Basic Details</legend>
+                                    <div class="form-group">
+                                        @Html.LabelFor(m => m.Book.Title, new { @class = "col-md-1 control-label" })
+                                        <div class="col-md-6" style="padding-right: 40px;">
+                                            @*@Html.TextBoxFor(m => m.Book.Title, new {@jqx_input="txtTitle", @jqx_settings = "TitleSettings", @jqx_ng_model = "Title", @ng_readonly = "bookReadOnly", @id = "txtTitle", @class = "form-control", @style = "padding-left: 12px;padding-right: 12px;font-size: 14px;color: #555;background-color: #fef8e4;border-radius: 4px;height: 34px;" })*@
+                                            <jqx_input jqx-settings="TitleSettings" jqx-ng-model="Title" ng-readonly="bookTitleReadOnly" id="txtTitle" class="form-control" style="padding-left: 12px;padding-right: 12px;font-size: 14px;color: #555;background-color: #fef8e4;border-radius: 4px;height: 34px;"></jqx_input>
+                                            @Html.HiddenFor(m => m.Book.Id, new { @ng_value = "Title.value" })
+                                            @Html.HiddenFor(m => m.Book.Title, new { @ng_value = "Title.label" })
+                                            @*@Html.ValidationMessageFor(m => m.Book.Title, "", new { @class = "text-danger" })*@
+                                        </div>
+                                        @Html.LabelFor(m => m.Book.Author, new { @class = "col-md-1 control-label" })
+                                        <div class="col-md-4">
+                                            @Html.TextBoxFor(m => m.Book.Author, new { @ng_model = "Author", @ng_readonly = "bookReadOnly", @id = "txtAuthor", @class = "form-control" })
+                                            @*@Html.ValidationMessageFor(m => m.Book.Author, "", new { @class = "text-danger" })*@
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        @Html.LabelFor(m => m.Book.Publication, new { @class = "col-md-1 control-label" })
+                                        <div class="col-md-6">
+                                            @Html.TextBoxFor(m => m.Book.Publication, new { @ng_model = "Publisher", @ng_readonly = "bookReadOnly", @id = "txtPublication", @class = "form-control" })
+                                            @*@Html.ValidationMessageFor(m => m.Book.Publication, "", new { @class = "text-danger" })*@
+                                        </div>
+                                        <label class="col-md-1 control-label">Category:</label>
+                                        <div class="col-md-4">
+                                            <jqx-drop-down-button jqx-settings="dropDownSettings">
+                                                <jqx-tree id="jqxTree" jqx-create="popupTreeSettings" jqx-settings="popupTreeSettings" style="border: none;z-index: 10000;"></jqx-tree>
+                                            </jqx-drop-down-button>
+                                            @Html.HiddenFor(m => m.CategoryIds, new { @ng_value = "CategoryIds" })
+                                        </div>
+                                    </div>
+                                </fieldset>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="col-md-3">
+                                    <fieldset>
+                                        <legend>Cover Image</legend>
+                                        <div class="text-center">
+                                            <img src="/Uploads/BookCovers/blank_cover_page.jpg" height="200px" width="150px" />
+                                            <input type="file" id="uploadBookCover" style="display: none;" />
+                                        </div>
+                                        <div class="text-center">
+                                            <jqx-button jqx-theme="theme" jqx-width="150" jqx-height="27" class="cancel" type="button" onclick="$('#uploadBookCover').click();">Upload Cover</jqx-button>
+                                        </div>
+                                    </fieldset>
+                                </div>
+                                <div class="col-md-9">
+                                    <fieldset ng-show="ShowBookDetails">
+                                        <legend>Book Details</legend>
+                                        <div class="form-group">
+                                            @Html.LabelFor(m => m.LibraryBook.BookNo, new { @class = "col-md-1 control-label" })
+                                            <div class="col-md-3">
+                                                @Html.TextBoxFor(m => m.LibraryBook.BookNo, new { @id = "txtAccessionNo", @ng_model = "AccessionNo", @class = "form-control" })
+                                                @*@Html.ValidationMessageFor(m => m.LibraryBook.BookNo, "", new { @class = "text-danger" })*@
+                                            </div>
+                                            @Html.LabelFor(m => m.LibraryBook.ClassNo, new { @class = "col-md-1 control-label" })
+                                            <div class="col-md-4">
+                                                @Html.TextBoxFor(m => m.LibraryBook.ClassNo, new { @ng_model = "ClassNo", @class = "form-control" })
+                                            </div>
+                                            <div class="col-md-3 control-label">
+                                                <jqx-check-box ng-model="HasCD" jqx-theme="theme">Has CD</jqx-check-box> @Html.CheckBoxFor(m => m.LibraryBook.HasCD, new { @ng_model = "HasCD", @class = "col-md-1 control-label", @style = " visibility: hidden;height: 0;width: 0;" })
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            @Html.LabelFor(m => m.LibraryBook.Pages, new { @class = "col-md-1 control-label" })
+                                            <div class="col-md-2">
+                                                <jqx-number-input ng-model="Pages" jqx-settings="numericInputSettings"></jqx-number-input>
+                                                @Html.HiddenFor(m => m.LibraryBook.Pages, new { @ng_value = "Pages" })
+                                            </div>
+                                            @Html.LabelFor(m => m.LibraryBook.PublishedYear, new { @class = "col-md-1 control-label" })
+                                            <div class="col-md-2">
+                                                <jqx-number-input ng-model="Year" jqx-settings="numericInputSettings"></jqx-number-input>
+                                                @Html.HiddenFor(m => m.LibraryBook.PublishedYear, new { @ng_value = "Year" })
+                                            </div>
+                                            @Html.LabelFor(m => m.LibraryBook.ISBN, new { @class = "col-md-1 control-label" })
+                                            <div class="col-md-5">
+                                                @Html.TextBoxFor(m => m.LibraryBook.ISBN, new { @ng_model = "ISBN", @class = "form-control" })
+                                            </div>
+                                        </div>
+                                    </fieldset>
+                                    <fieldset ng-show="ShowBookDetails">
+                                        <legend>Purchase Details</legend>
+                                        <div class="form-group">
+                                            @Html.LabelFor(m => m.LibraryBook.Store, new { @class = "col-md-1 control-label" })
+                                            <div class="col-md-11">
+                                                @Html.TextBoxFor(m => m.LibraryBook.Store, new { @ng_model = "Store", @class = "form-control" })
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            @Html.LabelFor(m => m.LibraryBook.PurchaseDate, new { @class = "col-md-1 control-label" })
+                                            <div class="col-md-4">
+                                                <jqx-date-time-input ng-model="PurchaseDate" jqx-settings="dateInputSettings" ng-disabled="disableStudentInfo">
+                                                </jqx-date-time-input>
+                                                @Html.HiddenFor(model => model.LibraryBook.PurchaseDate, new { @ng_value = "PurchaseDate | date: 'dd/MM/yyyy'" })
+                                            </div>
+                                            @Html.LabelFor(m => m.LibraryBook.Price, new { @class = "col-md-1 control-label" })
+                                            <div class="col-md-6">
+                                                <jqx-number-input ng-model="Price" jqx-settings="priceInputSettings"></jqx-number-input>
+                                                @Html.HiddenFor(model => model.LibraryBook.Price, new { @ng_value = "Price" })
+                                            </div>
+                                        </div>
+                                    </fieldset>
+                                </div>
+                            </div>
+                            <div class="col-md-12 text-right">
+                                <jqx-button jqx-theme="theme" jqx-width="100" jqx-height="30" ng-click="onBeforeSave(event)" type="button">Save</jqx-button>
+                            </div>
+                            <div class="col-md-12 text-danger">
+                                {{SaveMessage}}
+                            </div>
+                        </div>
+                    }
+                </div>
+            </jqx-window>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    @*@Scripts.Render("~/bundles/jqueryval")*@
+
+    <script type="text/javascript" language="javascript">
+        var abbApp = angular.module("ABBApp", ["jqwidgets"]).factory('$exceptionHandler', function () {
+            return function (exception, cause) {
+                exception.message += ' (caused by "' + cause + '")';
+                console.log(exception, cause);
+                //alert(exception.message);
+                throw exception;
+            }
+        });
+        abbApp.controller("userController", function ($scope, $http) {
+            $scope.txtSearch = $('#txtSearch');
+            $scope.createWidget = false;
+            $scope.theme = getTheme();
+            $scope.WindowTitle = 'Add New';
+            $scope.bookId = 0;
+            $scope.bookReadOnly = false;
+            $scope.bookTitleReadOnly = false;
+            $scope.ShowBookDetails = true;
+            var saveAll = false;
+
+            var bookTitleSource = {
+                datatype: "json",
+                type: "POST",
+                datafields: [
+                    { name: 'Id', type: 'int' },
+                    { name: 'Title', type: 'string' },
+                    { name: 'Author', type: 'string' },
+                    { name: 'Publication', type: 'string' }
+                ],
+                url: '/Library/GetBooks',
+                data: { categoryId: 0, searchKeyword: '' },
+                Id: "Id"
+            };
+            var bookTitleDataAdapter = new $.jqx.dataAdapter(bookTitleSource);
+
+            $scope.TitleSettings = {
+                theme: $scope.theme,
+                source: bookTitleDataAdapter, // [{ id: 1, Title: 'Title1' }, { id: 2, Title: 'Title2' }, { id: 3, Title: 'Title3' }]
+                displayMember: 'Title',
+                valueMember: 'Id',
+                searchMode: 'containsignorecase',
+                minLength: 3,
+                change: function (e) {
+                    //debugger;
+                    if (e.args == null)
+                        return;
+                    var Id = e.args.item.value;
+                    var Title = e.args.item.label;
+                    $scope.Title = { label: Title, value: Id };
+
+                    var books = jQuery.grep(bookTitleDataAdapter.records, function (data) {
+                        return data.Id == Id;
+                    });
+
+                    if (typeof (books) === 'object' && books.length > 0) {
+                        $scope.Author = books[0].Author;
+                        $scope.Publisher = books[0].Publication;
+                        PopulateBookCategories(Id);
+                    }
+                }
+            };
+
+            $scope.numericInputSettings = {
+                theme: $scope.theme,
+                width: '100%',
+                height: 30,
+                inputMode: 'simple',
+                spinButtons: true,
+                decimalDigits: 0,
+                min: 0
+            }
+
+            $scope.priceInputSettings = {
+                theme: $scope.theme,
+                width: '100%',
+                height: 30,
+                inputMode: 'simple',
+                spinButtons: true,
+                decimalDigits: 2,
+                min: 0
+            }
+
+            $scope.dateInputSettings = {
+                width: '100%',
+                height: 30,
+                formatString: 'dd/MM/yyyy',
+                theme: $scope.theme,
+                valueChanged: function (event) {
+                    var jsDate = event.args.date;
+                }
+            }
+
+            $scope.mainSplitterSettings = {
+                width: '100%',
+                height: 600,
+                orientation: 'vertical',
+                panels: [{ size: 250, collapsible: true }],
+                theme: $scope.theme
+            }
+
+            $scope.expanderSettings = {
+                showArrow: false,
+                toggleMode: 'none',
+                width: '100%',
+                height: '100%',
+                theme: $scope.theme
+            }
+
+            $scope.rightPanelSettings = {
+                width: '100%',
+                height: '100%',
+                orientation: 'horizontal',
+                panels: [{ size: 30, collapsible: true }],
+                theme: $scope.theme
+            }
+
+            $scope.rightBottomPanelSettings = {
+                width: '100%',
+                height: '100%',
+                orientation: 'horizontal',
+                panels: [{ size: 350, collapsible: false }],
+                theme: $scope.theme
+            }
+
+            $scope.jqxTabSettings = {
+                width: '99.8%',
+                height: '100%',
+                position: 'top',
+                selectionTracker: true,
+                theme: $scope.theme
+            }
+
+            $scope.buttonGroupSettings = {
+                mode: 'default',
+                width: '200',
+                theme: $scope.theme
+            }
+
+            $scope.dropDownSettings = {
+                theme: $scope.theme,
+                width: '100%',
+                height: 30,
+                //height: 'auto',
+                created: function (args) {
+                    var dropDownContent = '<div style="position: relative; margin-left: 3px; margin-top: 7px;"><b>Add/Remove Category</b></div>';
+                    $scope.dropDownSettings.jqxDropDownButton('setContent', dropDownContent);
+                    $scope.popupTreeSettings.jqxTree('expandAll');
+                }
+            }
+
+            $scope.GridLoaderSettings = {
+                theme: $scope.theme,
+                isModal: true,
+                imagePosition: 'top',
+                width: 100,
+                height: 60
+            }
+
+            $scope.txtSearch.jqxInput({ placeHolder: "Search Keyword", width: 250, height: 28, theme: $scope.theme });
+
+            $scope.btnSearchClick = function (event) {
+                var selectedItem = $scope.treeSettings.jqxTree('getSelectedItem');
+                if (selectedItem == null) {
+                    alert('Please select book category.');
+                    return;
+                }
+
+                bindDetailGrid(0);
+                bindGrid();
+            }
+
+            $scope.toolBarButtonClick = function (event) {
+                var clickedButton = event.args.button;
+                if ($('#' + clickedButton[0].id).jqxButton('disabled'))
+                    return;
+                //alert(clickedButton[0].id);
+                if (clickedButton[0].id == 'btnAddBook') {
+                    $scope.WindowTitle = 'Add New'
+                    $scope.bookId = 0;
+                    $scope.libraryBookId = 0;
+                    $scope.Title = { label: '', value: 0 };
+                    $scope.TitleSettings.jqxInput('val', ''); // Not working after jqwidget ver update...
+                    $scope.Author = '';
+                    $scope.Publisher = '';
+                    $scope.AccessionNo = '';
+                    $scope.ClassNo = '';
+                    $scope.HasCD = false;
+                    $scope.Pages = 0;
+                    $scope.Year = 0;
+                    $scope.ISBN = '';
+                    $scope.Store = '';
+                    $scope.PurchaseDate = null;
+                    $scope.Price = 0;
+                    $scope.SaveMessage = '';
+                    $scope.bookReadOnly = false;
+                    $scope.bookTitleReadOnly = false;
+                    $scope.CategoryIds = '';
+                    saveAll = true;
+                    $scope.ShowBookDetails = true;
+                    var items = $scope.popupTreeSettings.jqxTree('getItems');
+                    $.each(items, function (j, node) {
+                        $scope.popupTreeSettings.jqxTree('checkItem', node, false);
+                    });
+                    //$scope.popupTreeSettings.jqxTree('uncheckAll');
+                    $scope.jqxWindowSettings.jqxWindow('open');
+                }
+                else if (clickedButton[0].id == 'btnExportToExcel') {
+                    $scope.gridSettings.jqxGrid('exportdata', 'xls', 'jqxGrid');
+                } else if (clickedButton[0].id == 'btnExportToCSV') {
+                    $scope.gridSettings.jqxGrid('exportdata', 'csv', 'jqxGrid');
+                } else if (clickedButton[0].id == 'btnPrint') {
+                    var gridContent = $scope.gridSettings.jqxGrid('exportdata', 'html');
+                    var newWindow = window.open('', '', 'width=800, height=500'),
+                        document = newWindow.document.open(),
+                        pageContent =
+                            '<!DOCTYPE html>\n' +
+                                '<html>\n' +
+                                '<head>\n' +
+                                '<meta charset="utf-8" />\n' +
+                                '<title>jQWidgets Grid</title>\n' +
+                                '</head>\n' +
+                                '<body>\n' + gridContent + '\n</body>\n</html>';
+                    document.write(pageContent);
+                    document.close();
+                    newWindow.print();
+                } else if (clickedButton[0].id == 'btnUpload') {
+                    jqxWindowUpload.jqxWindow('open');
+                }
+            }
+
+            $scope.treeSettings = {
+                allowDrag: false,
+                width: '100%',
+                theme: $scope.theme,
+                select: function (event) {
+                    var args = event.args;
+                    var item = $scope.treeSettings.jqxTree('getItem', args.element);
+                    //alert(item.value);
+                    bindDetailGrid(0);
+                    bindGrid();
+                    $scope.gridSettings.jqxGrid('clearselection');
+                },
+                initialized: function (event) {
+                    //$scope.treeSettings.jqxTree('expandAll');
+                }
+            }
+
+            $scope.popupTreeSettings = {
+                width: '100%',
+                theme: $scope.theme,
+                checkboxes: true,
+                hasThreeStates: true,
+                checkChange: function (event) {
+                    var args = event.args;
+                    var element = args.element;
+                    var item = $scope.popupTreeSettings.jqxTree('getItem', element);
+
+                    var array = [];
+                    if (typeof ($scope.CategoryIds) == 'undefined' || $scope.CategoryIds === null || $scope.CategoryIds === '')
+                        array = [];
+                    else
+                        array = $scope.CategoryIds.split(',');
+
+                    if (args.checked && jQuery.inArray(item.value, array) === -1)
+                        array.push(item.value);
+                    else if (!args.checked && jQuery.inArray(JSON.stringify(item.value), array) !== -1)
+                        array = jQuery.grep(array, function (value) {
+                            return value != item.value;
+                        });
+                    $scope.CategoryIds = array.join(',');
+                }
+            }
+
+            $scope.gridBookDetailsSettings = {
+                theme: $scope.theme,
+                altrows: true,
+                width: '99.8%',
+                height: '95%',
+                sortable: true,
+                editable: false,
+                enablehover: true,
+                showdefaultloadelement: false,
+                autoshowloadelement: false,
+                columns: [
+                            { text: "Id", datafield: "Id", hidden: true },
+                            { text: "Accession No", datafield: "BookNo" },
+                            { text: 'ClassNo', datafield: 'ClassNo', width: '100' },
+                            { text: "Price", datafield: "Price", width: '100' },
+                            { text: "Status", datafield: "Status", width: '100' },
+                            { text: "HasCD", datafield: "HasCD", columntype: 'checkbox', width: '50' },
+                            { text: "PurchaseDate", datafield: "PurchaseDate", width: '80', cellsformat: 'dd/MM/yyyy' },
+                            {
+                                text: 'Edit', datafield: 'Edit', width: 70, columntype: 'button', cellsrenderer: function () { return "Edit"; },
+                                buttonclick: function (row) {
+                                    // open the popup window when the user clicks a button.
+                                    //var offset = $("#gridDetails").offset();
+                                    // get the clicked row's data and initialize the input fields.
+                                    var dataRecord = $("#gridDetails").jqxGrid('getrowdata', row);
+
+                                    // get selected row index of main grid
+                                    var rowindex = $('#gridMain').jqxGrid('getselectedrowindex');
+                                    // get selected row's data
+                                    var mainDataRecord = $("#gridMain").jqxGrid('getrowdata', rowindex);
+
+                                    $scope.ShowBookDetails = true;
+
+                                    // show the popup window.
+                                    $scope.jqxWindowSettings.jqxWindow({ position: 'center' });
+                                    $scope.jqxWindowSettings.jqxWindow('open');
+                                    $scope.WindowTitle = 'Edit Book';
+                                    $scope.bookId = mainDataRecord.Id;
+                                    $scope.libraryBookId = dataRecord.Id;
+                                    //$scope.Title = mainDataRecord.Title;
+                                    $scope.Title = { label: mainDataRecord.Title, value: mainDataRecord.Id };
+                                    $scope.TitleSettings.jqxInput('val', $scope.Title);
+                                    $scope.Author = mainDataRecord.Author;
+                                    $scope.Publisher = mainDataRecord.Publication;
+                                    $scope.AccessionNo = dataRecord.BookNo;
+                                    $scope.ClassNo = dataRecord.ClassNo;
+                                    $scope.HasCD = dataRecord.HasCD;
+                                    $scope.Pages = dataRecord.Pages;
+                                    $scope.Year = dataRecord.PublishedYear;
+                                    $scope.ISBN = dataRecord.ISBN;
+                                    $scope.Store = dataRecord.Store;
+                                    $scope.PurchaseDate = dataRecord.PurchaseDate;
+                                    $scope.Price = dataRecord.Price;
+                                    $scope.SaveMessage = '';
+                                    $scope.bookReadOnly = true;
+                                    $scope.bookTitleReadOnly = true;
+                                    PopulateBookCategories(mainDataRecord.Id);
+                                    saveAll = true;
+                                    //$scope.popupTreeSettings.jqxTree({ disabled: true });
+                                }
+                            }
+                ]
+            }
+
+            var PopulateBookCategories = function (bookId) {
+                $http.post('/Library/GetBookCategories', JSON.stringify({ bookId: bookId }))
+                                        .then(function (response) {
+                                            //Success
+                                            //alert(JSON.stringify(response.data));
+                                            var allData = response.data;
+                                            //$scope.popupTreeSettings.jqxTree('uncheckAll');
+                                            var items = $scope.popupTreeSettings.jqxTree('getItems');
+                                            $scope.CategoryIds = '';
+                                            var catArray = [];
+                                            $.each(items, function (j, node) {
+                                                $scope.popupTreeSettings.jqxTree('checkItem', node, false);
+                                            });
+                                            for (var i = 0; i < allData.length; i++) {
+                                                var item = $.grep(items, function (node, j) {
+                                                    return node.value === allData[i].CategoryId;
+                                                });
+
+                                                if (typeof (item) != 'undefined' && item != null && item.length > 0) {
+                                                    $scope.popupTreeSettings.jqxTree('checkItem', item[0], true);
+                                                    catArray.push(item[0].value);
+                                                }
+                                            }
+                                            $scope.CategoryIds = catArray.join(',');
+                                        },
+                                        function (response) {
+                                            alert(JSON.stringify(response));
+                                            //Error
+                                        });
+            }
+
+            $scope.gridSettings = {
+                theme: $scope.theme,
+                altrows: true,
+                width: '99.8%',
+                height: '100%',
+                sortable: true,
+                editable: true,
+                editmode: 'dblclick',
+                scrollmode: 'deferred',
+                enablehover: true,
+                columnsresize: true,
+                enabletooltips: true,
+                showdefaultloadelement: false,
+                autoshowloadelement: false,
+                columns: [
+                        { text: 'Title', datafield: 'Title' },
+                        { text: 'Author', datafield: 'Author', width: '200' },
+                        { text: 'Publication', datafield: 'Publication', width: '200' },
+                        {
+                            text: 'Edit', datafield: 'Edit', width: 70, columntype: 'button', cellsrenderer: function () { return "Edit"; },
+                            buttonclick: function (row) {
+                                //debugger;
+                                // get the clicked row's data and initialize the input fields.
+                                var dataRecord = $scope.gridSettings.jqxGrid('getrowdata', row);
+
+                                $scope.ShowBookDetails = false;
+                                $scope.bookReadOnly = false;
+                                $scope.bookTitleReadOnly = true;
+                                $scope.bookId = dataRecord.Id;
+                                $scope.Title = { label: dataRecord.Title, value: dataRecord.Id };
+                                $scope.TitleSettings.jqxInput('val', $scope.Title);
+                                $scope.Author = dataRecord.Author;
+                                $scope.Publisher = dataRecord.Publication;
+
+                                $scope.AccessionNo = '';
+                                $scope.ClassNo = '';
+                                $scope.HasCD = false;
+                                $scope.Pages = 0;
+                                $scope.Year = 0;
+                                $scope.ISBN = '';
+                                $scope.Store = '';
+                                $scope.PurchaseDate = Date.now();
+                                $scope.Price = 0;
+                                $scope.SaveMessage = '';
+
+                                PopulateBookCategories(dataRecord.Id);
+                                saveAll = false;
+                                // show the popup window.
+                                $scope.jqxWindowSettings.jqxWindow({ position: 'center' });
+                                $scope.jqxWindowSettings.jqxWindow('open');
+                            }
+                        }
+                ],
+                rowselect: function (event) {
+                    var bookId = event.args.row.Id;
+                    bindDetailGrid(bookId);
+                    $scope.gridBookDetailsSettings.jqxGrid('clearselection');
+                },
+                cellclick: function (event) {
+                    // event arguments.
+                    var args = event.args;
+                    // row's bound index.
+                    var rowBoundIndex = args.rowindex;
+                    // row's visible index.
+                    var rowVisibleIndex = args.visibleindex;
+                    // right click.
+                    var rightclick = args.rightclick;
+                    // original event.
+                    var ev = args.originalEvent;
+                    // column index.
+                    var columnindex = args.columnindex;
+                    // column data field.
+                    var dataField = args.datafield;
+                    // cell value
+                    var value = args.value;
+                }
+                //showtoolbar: false,
+                //autorowheight: true,
+                //autoheight: true
+            }
+
+            var bindGrid = function () {
+                //$('#gridMain').blockElement({ showImage: false });
+                $scope.GridLoaderSettings.jqxLoader('open');
+                var selectedItem = $scope.treeSettings.jqxTree('getSelectedItem');
+
+                if (selectedItem == null) {
+                    alert('Please select book category.');
+                    return;
+                }
+                var source = {
+                    datatype: "json",
+                    type: "POST",
+                    datafields: [
+                        { name: 'Id', type: 'int' },
+                        { name: 'Title', type: 'string' },
+                        { name: 'Author', type: 'string' },
+                        { name: 'Subject', type: 'string' },
+                        { name: 'Publication', type: 'string' },
+                    ],
+                    url: '/Library/GetBooks',
+                    data: { categoryId: selectedItem.value, searchKeyword: $scope.txtSearch.val() },
+                    Id: "Id"
+                };
+                var gridDataAdapter = new $.jqx.dataAdapter(source, {
+                    loadComplete: function (data) {
+                        //$('#gridMain').unblock();
+                        $scope.GridLoaderSettings.jqxLoader('close');
+                    }
+                });
+                $scope.gridSettings.source = gridDataAdapter;
+            }
+
+            var bindDetailGrid = function (bookId) {
+                //$('#gridDetails').blockElement({ showImage: false });
+                //$('#gridMain').blockElement({ showImage: false });
+                $scope.GridLoaderSettings.jqxLoader('open');
+                var source = {
+                    datatype: 'json',
+                    type: 'POST',
+                    datafields: [
+                        { name: 'Id', type: 'int' },
+                        { name: "BookNo", type: 'string' },
+                        { name: 'ClassNo', type: 'string' },
+                        { name: "Price", type: 'float' },
+                        { name: "PurchaseDate", type: 'date' },
+                        { name: "Status", type: 'string' },
+                        { name: "HasCD", type: 'bool' },
+                        { name: 'Pages', type: 'int' },
+                        { name: 'PublishedYear', type: 'int' },
+                        { name: "ISBN", type: 'string' },
+                        { name: "Store", type: 'string' }
+                    ],
+                    url: '/Library/GetBookDetails',
+                    data: { bookId: bookId },
+                    Id: 'Id'
+                }
+
+                var gridDataAdapter = new $.jqx.dataAdapter(source, {
+                    loadComplete: function (data) {
+                        //alert(JSON.stringify(data));
+                        //$('#gridDetails').unblock();
+                        //$('#gridMain').unblock();
+                        $scope.GridLoaderSettings.jqxLoader('close');
+                    }
+                });
+
+                $scope.gridBookDetailsSettings.source = gridDataAdapter;
+            }
+
+            var bindTree = function () {
+                // prepare the data
+                var treeSource = {
+                    datatype: "json",
+                    datafields: [
+                        { name: 'Id' },
+                        { name: 'ParentId' },
+                        { name: 'Name' },
+                        { name: 'Value' }
+                    ],
+                    id: 'Id',
+                    url: "/Library/GetAllCategories"
+                }
+
+                // create data adapter.
+                var treeDataAdapter = new $.jqx.dataAdapter(treeSource, {
+                    loadComplete: function () {
+                        var records = treeDataAdapter.getRecordsHierarchy('Id', 'ParentId', 'items', [{ name: 'Name', map: 'label' }, { name: 'Value', map: 'value' }]);
+                        $scope.treeSettings.source = records;
+                        $scope.popupTreeSettings.source = records;
+                        //$scope.treeSettings.jqxTree('expandAll');
+                        //bindGrid();
+                    }
+                });
+
+                treeDataAdapter.dataBind();
+            }
+
+            //bindGrid();
+            bindTree();
+
+            $scope.jqxWindowSettings = {
+                height: 520,
+                width: 1000,
+                theme: $scope.theme,
+                resizable: false,
+                isModal: true,
+                autoOpen: false,
+                modalOpacity: 0.3,
+                open: function (event) {
+                    //$scope.popupTreeSettings.jqxTree('uncheckAll');
+                }
+            };
+
+            $scope.onAddNewClick = function (event) {
+                $scope.WindowTitle = 'Add New'
+                $scope.bookId = 0;
+                $scope.libraryBookId = 0;
+                $scope.Title = '';
+                $scope.Author = '';
+                $scope.Publisher = '';
+                $scope.AccessionNo = '';
+                $scope.ClassNo = '';
+                $scope.HasCD = false;
+                $scope.Pages = 0;
+                $scope.Year = 0;
+                $scope.ISBN = '';
+                $scope.Store = '';
+                $scope.PurchaseDate = null;
+                $scope.Price = 0;
+                $scope.SaveMessage = '';
+                $scope.jqxWindowSettings.jqxWindow('open');
+            }
+
+            $scope.onBeforeSave = function (event) {
+                //return $scope.validatorSettings.jqxValidator('validate', $('#frmMain'));
+                //var items = $scope.popupTreeSettings.jqxTree('getCheckedItems');
+                //$scope.CategoryIds = '';
+                //for (var i = 0; i < items.length; i++) {
+                //    var item = items[i];
+                //    $scope.CategoryIds += item.value + ",";
+                //}
+                
+                var isValidate = false;
+                if ($scope.Title.label != '' && $scope.Title.value == 0) {
+                    jqxConfirm('Confirm New Book Title', 'You are about to add new book title. Please make sure book title - <b>' + $scope.Title.label + '</b> is not available in existing list to avoid duplicate book titles. If you are sure to continue with new book title, press Ok.',
+                        400,
+                        120,
+                        function (e) {
+                            if (!e)
+                                return false;
+                            else {
+                                if ($scope.validatorSettings.apply('validate'))
+                                    isValidate = true;
+                            }
+                        })
+                }
+                else {
+                    if ($scope.validatorSettings.apply('validate'))
+                        isValidate = true;
+                }
+
+                if (isValidate || !saveAll) {
+                    if (saveAll)
+                        $('#frmMain').submit();
+                    else {
+                        $http.post('/Library/SaveOnlyBook', JSON.stringify({ Id: $scope.bookId, title: $scope.Title.label, author: $scope.Author, publication: $scope.Publisher, categoryIds: $scope.CategoryIds }))
+                                        .then(function (e) {
+                                            //Success
+                                            //alert(JSON.stringify(response.data));
+                                            var response = e.data;
+
+                                            if (response.MsgType == 1 || response.MsgType == 4) {
+                                                //Error
+                                                $.each(response.Messages, function (index, value) {
+                                                    //alert(index + ": " + value);
+                                                    displayBarNotification(value, 'error', 15);
+
+                                                    $('html, body').animate({
+                                                        'scrollTop': $("#container").position().top - 50
+                                                    });
+                                                });
+                                            }
+                                            else if (response.MsgType == 2) {
+                                                // Success
+                                                displayBarNotification('Data saved successfully.', 'success', 15);
+                                                $scope.jqxWindowSettings.jqxWindow('close');
+                                                bindGrid();
+                                            }
+                                        },
+                                        function (response) {
+                                            displayBarNotification(JSON.stringify(response), 'error', 15);
+                                        });
+                    }
+                }
+            }
+
+            $scope.onSave = function () {
+                //$scope.SaveMessage = 'Data saved successfully.';
+                displayBarNotification('Data saved successfully.', 'success', 15);
+                $scope.jqxWindowSettings.jqxWindow('close');
+                bindGrid();
+                var rowindex = $scope.gridSettings.jqxGrid('getselectedrowindex');
+                var data = $scope.gridSettings.jqxGrid('getrowdatabyid', rowindex)
+                //var data = $('#gridMain').jqxGrid('getrowdatabyid', rowindex);
+                bindDetailGrid(data.Id);
+                //if ($('#frmMain').valid()) {
+
+                //}
+                //else {
+                //    alert('Not Saved');
+                //}
+            }
+
+            $scope.validatorSettings = {
+                hintType: 'label',
+                animationDuration: 0,
+                position: 'topright',
+                rules: [
+                    { input: '#txtTitle', message: ' ', action: 'keyup, blur', rule: 'required' },
+                    { input: '#txtAuthor', message: ' ', action: 'keyup, blur', rule: 'required' },
+                    { input: '#txtPublication', message: ' ', action: 'keyup, blur', rule: 'required' },
+                    { input: '#txtAccessionNo', message: ' ', action: 'keyup, blur', rule: 'required' }
+                ]
+            }
+
+            $scope.createWidget = true;
+        });
+
+        var onBegin = function () {
+            //$('#jqxWindowBook').blockElement({ showImage: true });
+            var scope = angular.element(document.getElementById("divController")).scope();
+            scope.GridLoaderSettings.jqxLoader('open');
+        }
+
+        var onSuccess = function (response) {
+            //$('#jqxWindowBook').unblock();
+            var scope = angular.element(document.getElementById("divController")).scope();
+            scope.GridLoaderSettings.jqxLoader('close');
+            if (response.MsgType == 1 || response.MsgType == 4) {
+                //Error
+                $.each(response.Messages, function (index, value) {
+                    //alert(index + ": " + value);
+                    displayBarNotification(value, 'error', 15);
+
+                    $('html, body').animate({
+                        'scrollTop': $("#container").position().top - 50
+                    });
+                });
+            }
+            else if (response.MsgType == 2) {
+                // Success
+
+                scope.$apply(function () {
+                    scope.onSave();
+                });
+
+            }
+        }
+
+        var onFailure = function (error) {
+            displayBarNotification('Oops! Unexptected error occured. Please contact administrator.', 'error', 15);
+
+            $('html, body').animate({
+                'scrollTop': $("#container").position().top - 50
+            });
+        }
+
+        $(document).ready(function () {
+            $("#uploadBookCover").change(function () {
+            })
+        })
+    </script>
+}
+
+
+
+

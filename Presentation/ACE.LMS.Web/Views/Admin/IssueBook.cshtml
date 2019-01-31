@@ -1,0 +1,477 @@
+﻿@model dynamic
+
+@{
+    ViewBag.Title = "Book Issue";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="col-lg-12">
+    <div style="color: #ff6a00;">
+        <h2>Issue / Return Book</h2>
+    </div>
+    <div ng-app="myApp">
+        <div ng-controller="gridController">
+            <jqx-grid id="gridMain" jqx-settings="gridSettings"></jqx-grid>
+            <jqx-window jqx-settings="jqxWindowSettings" style="display: none;">
+                <div>Book Issue</div>
+                <div id="winIssuePopup" style="overflow: hidden;">
+                    <table>
+                        <tr>
+                            <td>
+                                Access No:
+                            </td>
+                            <td>
+                                <input ng-model="BookNo" class="form-control" id="txtBookNo" maxlength="20" required />
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>
+                                Return On or Before:
+
+                            </td>
+                            <td>
+                                <jqx-date-time-input ng-model="ReturnOn" jqx-settings="dateInputSettings" id="dtpAvailable"></jqx-date-time-input>
+
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Note:
+                            </td>
+                            <td>
+                                <input ng-model="Notes" class="form-control" id="txtNotes" maxlength="150" multiple="3" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Received By:
+                            </td>
+                            <td>
+                                <input ng-model="ReceiverName" class="form-control" id="txtReceiverName" maxlength="70" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Receiver No:
+                            </td>
+                            <td>
+                                <input ng-model="mobile" class="form-control" id="txtmobile" maxlength="10" />
+
+                            </td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td>
+                                <label id="lblMessage" style="color: red;" type="label">{{Message}}</label>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td align="right"></td>
+                            <td style="padding-top: 10px;" align="right">
+                                <jqx-button jqx-theme="theme" jqx-on-click="saveClick(event)">Save</jqx-button>
+                                <jqx-button id="CancelIssue" jqx-theme="theme" jqx-on-click="cancelClick(event)">Cancel</jqx-button>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </jqx-window>
+
+            <jqx-window jqx-settings="jqxRetWindowSettings" style="display: none;">
+                <div>Book Return</div>
+                <div id="winReturnPopup" style="overflow: hidden;">
+                    <table>
+                        <tr>
+                            <td>
+                                Note:
+                            </td>
+                            <td>
+                                <input ng-model="RetNotes" class="form-control" id="txtRetNotes" maxlength="250" multiple="3" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Submitted By:
+                            </td>
+                            <td>
+                                <input ng-model="SubmitName" class="form-control" id="txtSubmitName" maxlength="100" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Receiver No:
+                            </td>
+                            <td>
+                                <input ng-model="Retmobile" class="form-control" id="txtRetmobile" maxlength="10" />
+
+                            </td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td>
+                                <label id="lblRetMessage" style="color: red;" type="label">{{RetMessage}}</label>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td align="right"></td>
+                            <td style="padding-top: 10px;" align="right">
+                                <jqx-button jqx-theme="theme" jqx-on-click="saveRetClick(event)">Save</jqx-button>
+                                <jqx-button id="CancelReturn" jqx-theme="theme" jqx-on-click="cancelRetClick(event)">Cancel</jqx-button>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </jqx-window>
+        </div>
+    </div>
+</div>
+
+<script>
+    var demoApp = angular.module("myApp", ["jqwidgets"]).factory('$exceptionHandler', function () {
+        return function (exception, cause) {
+            exception.message += ' (caused by "' + cause + '")';
+            throw exception;
+        }
+    });
+
+    demoApp.controller("gridController", function ($parse, $scope, $http) {
+        $scope.theme = getTheme();
+        $scope.createWidget = false;
+
+        $scope.AvailableFrom = new Date();
+        $scope.Status = "";
+        $scope.Notes = "";
+        $scope.stat = "";
+        $scope.BookNo = "Boook";
+        $scope.Confirm = 'no';
+
+        $scope.dateInputSettings = {
+            width: 200,
+            height: 30,
+            formatString: 'dd/MM/yyyy',
+            theme: $scope.theme
+        }
+        var bindGrid = function () {
+            var source = {
+                datatype: "json",
+                type: "POST",
+                datafields: [
+                    { name: 'Id', type: 'int' },
+                    { name: 'StudentName', type: 'string' },
+                    { name: 'CollegeName', type: 'string' },
+                    { name: 'BranchName', type: 'int' },
+                    { name: 'SemesterStartDate', type: 'date' },
+                    { name: 'SemesterEndDate', type: 'date' },
+                    { name: 'RequestDate', type: 'date' }
+
+                ],
+                url: '/Admin/GetRequests',
+                data: { task: "Issue" },
+                Id: "Id"
+            };
+            var gridDataAdapter = new $.jqx.dataAdapter(source);
+            $scope.gridSettings.source = gridDataAdapter;
+        }
+        // create nested grid.
+
+        var initrowdetails = function (index, parentElement, gridElement, record) {
+            var id = record.uid.toString();
+            var grid = $($(parentElement).children()[0]);
+            var rowData = $scope.gridSettings.apply('getrowdata', index);
+
+            var nestedSource = {
+                datafields: [
+                   { name: 'BookRequestDetailId', type: 'int' },
+                   { name: 'BookId', type: 'int' },
+                   { name: 'Title', type: 'string' },
+                   { name: 'Author', type: 'string' },
+                   { name: 'Publication', type: 'string' },
+                   { name: 'AvailableBooks', type: 'int' },
+                   { name: 'Status', type: 'int' },
+                   { name: 'totalInLibrary', type: 'int' },
+                   { name: 'ApprovedBooks', type: 'int' },
+                   { name: 'NewApproval', type: 'int' },
+                   { name: 'IssuedBooks', type: 'int' },
+                   { name: 'TornBooks', type: 'int' },
+                   { name: 'Available', type: 'string' },
+                   { name: 'IssueId', type: 'int' },
+                   { name: 'Issue', type: 'bool' },
+                   { name: 'Return', type: 'bool' }
+
+                ],
+                datatype: 'json',
+                type: 'POST',
+                root: 'Details',
+                url: '/Admin/GetRequestDetails',
+                Id: "BookRequestDetailId",
+                data: { BookRequestId: rowData.Id, task: "Issue" }
+            };
+
+            var nestedAdapter = new $.jqx.dataAdapter(nestedSource);
+
+            if (grid != null) {
+                grid.jqxGrid({
+                    source: nestedAdapter,
+                    width: '100%',
+                    columnsresize: true,
+                    theme: $scope.theme,
+                    columns: [
+                            { text: "BookRequestDetailId", datafield: "BookRequestDetailId", hidden: true },
+                            { text: "IssueId", datafield: "IssueId", hidden: true },
+                            { text: "Title", datafield: "Title", width: '20%' },
+                            { text: "BookId", datafield: "BookId", hidden: true },
+                            { text: "Author", datafield: "Author", width: '20%' },
+                            { text: "Publication", datafield: "Publication", width: '20%' },
+                          //  { text: 'totalInLibrary', datafield: 'totalInLibrary' },
+                          //  { text: 'Approved', datafield: 'ApprovedBooks', width: '5%' },
+                           // { text: 'New Proposal', datafield: 'NewApproval', width: '5%' },
+                            { text: 'Issued', datafield: 'IssuedBooks', width: '5%' },
+                            { text: 'Torn/Missing', datafield: 'TornBooks', width: '5%' },
+                            { text: "Available", datafield: "Available", width: '5%' },
+                            {
+                                text: "Issue", width: '5%', datafield: "Issue",
+                                cellsrenderer: function (row, columnfield, value, defaulthtml, columnproperties) {
+
+                                    $scope.IssueStatus = value;
+
+                                    var dataRecord = grid.jqxGrid('getrowdata', row);
+                                    var BookRequestDetailId = dataRecord.BookRequestDetailId;
+                                    var BookId = dataRecord.BookId;
+                                    $parse("I_" + BookRequestDetailId).assign($scope, value);
+
+
+                                    var Available = dataRecord.Available.substring(0, dataRecord.Available.indexOf("/"));
+
+
+                                    if (value || parseInt(Available) <= 0)
+                                        return "  <div style='text-align: center; margin-top: 5px;'><input type='checkbox' value=true ng-model='I_" + BookRequestDetailId + "' ng-change='Issue(" + BookRequestDetailId + "," + BookId + "," + rowData.Id + ")' disabled></div>";
+                                    else
+                                        return "  <div style='text-align: center; margin-top: 5px;'><input type='checkbox' value=true ng-model='I_" + BookRequestDetailId + "' ng-change='Issue(" + BookRequestDetailId + "," + BookId + "," + rowData.Id + ")' ></div>";
+
+                                }
+                            },
+                            {
+                                text: "Return", width: '5%', datafield: "Return",
+                                cellsrenderer: function (row, columnfield, value, defaulthtml, columnproperties) {
+
+                                    $scope.ReturnStatus = value;
+
+                                    var dataRecord = grid.jqxGrid('getrowdata', row);
+                                    var BookRequestDetailId = dataRecord.BookRequestDetailId;
+                                    var BookId = dataRecord.BookId;
+                                    var IssueId = dataRecord.IssueId;
+                                    var Issue = dataRecord.Issue;
+                                    $parse("R_" + BookRequestDetailId).assign($scope, value);
+                                    if (Issue)
+                                        return "  <div style='text-align: center; margin-top: 5px;'><input type='checkbox' value=true ng-model='R_" + BookRequestDetailId + "' ng-change='Return(" + BookRequestDetailId + "," + BookId + "," + IssueId + "," + rowData.Id + ")'  ></div>";
+                                    else
+                                        return "  <div style='text-align: center; margin-top: 5px;'><input type='checkbox' value=true ng-model='R_" + BookRequestDetailId + "' ng-change='Return(" + BookRequestDetailId + "," + BookId + "," + IssueId + "," + rowData.Id + ")' disabled ></div>";
+                                }
+                            }
+
+                    ]
+                });
+
+                $scope.Issue = function (BookRequestDetailId, BookId, RequestId) {
+
+                    $scope.RequestId = RequestId;
+                    $scope.BookRequestDetailId = BookRequestDetailId;
+                    $scope.BookId = BookId;
+                    $scope.ReturnOn = new Date();
+                    $scope.Notes = "";
+                    $scope.BookNo = "";
+                    $scope.Message = "";
+                    $scope.ReceiverName = "";
+                    $scope.mobile = "";
+                    $scope.jqxWindowSettings.apply('show');
+                }
+
+                $scope.Return = function (BookRequestDetailId, BookId, IssueId, RequestId) {
+                    $scope.RequestId = RequestId;
+
+                    $scope.BookRequestDetailId = BookRequestDetailId;
+                    $scope.BookId = BookId;
+                    $scope.BookIssueId = IssueId;
+                    $scope.RetNotes = "";
+                    $scope.SubmittedBy = "";
+                    $scope.Retmobile = "";
+                    $scope.RetMessage = "";
+                    $scope.jqxRetWindowSettings.apply('show');
+                }
+
+                // initialize the popup window and buttons.
+            }
+        }
+
+        $scope.bookRequestId = 0;
+        $scope.saveRetClick = function (e) {
+            var bookReturn = {
+                BookIssueId: $scope.BookIssueId,
+                Notes: $scope.RetNotes,
+                SubmittedBy: $scope.SubmitName,
+                Mobile: $scope.Retmobile
+            };
+
+            $('#winReturnPopup').blockElement({ showImage: true });
+
+            $http.post('/Admin/ReturnBook', { BookRequestDetailId: $scope.BookRequestDetailId, BookId: $scope.BookId, bookReturn: bookReturn }).success(function (retData) {
+
+                if (retData.Message == "Success") {
+
+                    $scope.RetNotes = "";
+                    $scope.SubmitName = "";
+                    $scope.Retmobile = "";
+                    $scope.jqxRetWindowSettings.apply('hide');
+                    bindGrid();
+
+                } else {
+                    $scope.RetMessage = retData.Message;
+
+                }
+
+                $('#winReturnPopup').unblock();
+
+
+
+            }).error(function (retData, status, headers, config) {
+                //alert(data.toString());
+            });
+        };
+
+        $scope.saveClick = function (e) {
+
+            var bookIssue = {
+                BookRequestDetailsId: $scope.BookRequestDetailId,
+                ReturnOnOrBefore: $scope.ReturnOn,
+                Notes: $scope.Notes,
+                BookReceivedBy: $scope.ReceiverName,
+                ReceiverNo: $scope.mobile
+            };
+
+
+            $('#winIssuePopup').blockElement({ showImage: true });
+            $http.post('/Admin/IssueBookToStudent', { bookIssue: bookIssue, BookNo: $scope.BookNo, oldBookId: $scope.BookId }).success(function (retData) {
+                if (retData.Message == "Success") {
+
+                    $scope.ReturnOn = new Date();
+                    $scope.Notes = "";
+                    $scope.BookNo = "";
+                    $scope.Message = "";
+                    $scope.ReceiverName = "";
+                    $scope.mobile = "";
+                    $scope.jqxWindowSettings.apply('hide');
+                    //$scope.gridSettings.apply("updatebounddata");
+                    bindGrid();
+                    // $scope.bookRequestId = retData.Data;
+                    $('#winIssuePopup').unblock();
+
+                } else if (retData.Message == "NewRequest") {
+                   
+                    if( confirm('There is no matching AccessNo to your book requested..Do you want to add new request?'))
+                    {
+                        $http.post('/Admin/AddOtherRequestDetail', { newBookId:retData.Data, BookNo: $scope.BookNo, BookRequestId: $scope.RequestId , oldBookRequestDetailsId:  $scope.BookRequestDetailId }).success(function (retData) {
+                        }).success(function (retData) {
+                           
+                            if (retData.Message == "Success") {
+
+                                $scope.ReturnOn = new Date();
+                                $scope.Notes = "";
+                                $scope.BookNo = "";
+                                $scope.Message = "";
+                                $scope.ReceiverName = "";
+                                $scope.mobile = "";
+                                $scope.jqxWindowSettings.apply('hide');
+                                //$scope.gridSettings.apply("updatebounddata");
+                                bindGrid();
+                                // $scope.bookRequestId = retData.Data;
+                                $('#winIssuePopup').unblock();
+                            }
+                            } );
+                    }
+                }
+                else {
+                    $scope.Message = retData.Message;
+                    $('#winIssuePopup').unblock();
+
+                }
+
+            }).error(function (retData, status, headers, config) {
+                $('#winIssuePopup').unblock();
+                                alert(retData.toString());
+            });
+
+        };
+
+        $scope.cancelClick = function (e) {
+            $scope.ReturnOn = new Date();
+            $scope.Notes = "";
+            $scope.BookNo = "";
+            $scope.Message = "";
+            $scope.ReceiverName = "";
+            $scope.mobile = "";
+            bindGrid();
+            $scope.jqxWindowSettings.apply('hide');
+        };
+
+        $scope.cancelRetClick = function (e) {
+            $scope.ReturnOn = new Date();
+            $scope.Notes = "";
+            $scope.BookNo = "";
+            $scope.Message = "";
+            $scope.ReceiverName = "";
+            $scope.mobile = "";
+            bindGrid();
+            $scope.jqxRetWindowSettings.apply('hide');
+        };
+
+
+        $scope.gridSettings = {
+            width: '100%',
+            //source: $scope.booksData,
+            theme: $scope.theme,
+            columnsresize: true,
+            rowdetails: true,
+            rowsheight: 35,
+            columns: [
+                        { text: 'StudentName', datafield: 'StudentName' },
+                        { text: 'CollegeName', datafield: 'CollegeName' },
+                        { text: 'BranchName', datafield: 'BranchName', width: 180 },
+                        { text: 'SemesterStartDate', datafield: 'SemesterStartDate', width: 120, cellsformat: 'dd/MM/yyyy' },
+                        { text: 'SemesterEndDate', datafield: 'SemesterEndDate', width: 120, cellsformat: 'dd/MM/yyyy' },
+                        { text: 'RequestDate', datafield: 'RequestDate', width: 120, cellsformat: 'dd/MM/yyyy' }
+            ],
+            initrowdetails: initrowdetails,
+            rowdetailstemplate: {
+                rowdetails: "<div id='grid' style='margin: 10px;'></div>",
+                rowdetailsheight: 220,
+                rowdetailshidden: true
+            },
+            bindingcomplete: function (event) {
+                if ($scope.RequestId <= 0)
+                    return;
+
+                var index = -1;
+                for (var i = 0, len = $scope.gridSettings.source.records.length; i < len; i++) {
+                    if ($scope.gridSettings.source.records[i].Id.toString() == $scope.RequestId) {
+                        index = i;
+                        break;
+                    }
+                }
+                $scope.bookRequestId = 0;
+                // var rowIndex = $scope.gridSettings.apply('getrowboundindexbyid', $scope.bookRequestId);
+                if (index >= 0)
+                    $scope.gridSettings.apply('showrowdetails', index);
+            }
+        };
+
+        bindGrid();
+        $scope.jqxWindowSettings = { width: 400, height: 300, resizable: false, theme: $scope.theme, isModal: true, autoOpen: false, cancelButton: $("#CancelIssue") };
+        $scope.jqxRetWindowSettings = { width: 400, height: 300, resizable: false, theme: $scope.theme, isModal: true, autoOpen: false, cancelButton: $("#CancelReturn") };
+        // now create the widget.
+        $scope.createWidget = true;
+
+
+    });
+
+</script>
+

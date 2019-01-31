@@ -1,0 +1,481 @@
+﻿@{
+    ViewBag.Title = "Book Requests";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div class="col-lg-12">
+    <div style="color: #ff6a00;">
+        <h2>Book Requests</h2>
+    </div>
+    <div ng-app="myApp">
+        <div ng-controller="gridController">
+            <fieldset>
+                <legend>Search</legend>
+                <div class="form-group">
+                    <label class="col-md-1 control-label">
+                        From:
+                    </label>
+                    <div class="col-md-2">
+                        <jqx-date-time-input ng-model="FromDate" jqx-settings="searchDateSettings"></jqx-date-time-input>
+                    </div>
+                    <label class="col-md-1 control-label">
+                        To:
+                    </label>
+                    <div class="col-md-2">
+                        <jqx-date-time-input ng-model="ToDate" jqx-settings="searchDateSettings"></jqx-date-time-input>
+                    </div>
+                    <label class="col-md-1 control-label">
+                        Eligible:
+                    </label>
+                    <div class="col-md-2">
+                        <jqx-drop-down-list ng-model="selectedEligibleValue" jqx-ng-model jqx-settings="ddlEligibleSettings"></jqx-drop-down-list>
+                    </div>
+                    <div class="col-md-3">
+                        <jqx-button ng-click="onSearchClick(event)" jqx-theme="theme" jqx-width="100" jqx-height="30">Search</jqx-button>
+                    </div>
+                </div>
+            </fieldset>
+            <br />
+            <br />
+            <fieldset id="reqApp">
+                <legend>Book Requests List</legend>
+                <jqx-grid id="gridMain" jqx-create="createWidget" jqx-columns="columns" jqx-settings="gridSettings"></jqx-grid>
+            </fieldset>
+            <div id="popupWindow" style="display: none;">
+                <div>Book Approve</div>
+                <div style="overflow: hidden;">
+                    <table>
+                        <tr>
+                            <td align="right">Status:</td>
+                            <td align="left">
+                                <jqx-drop-down-list id="drpStatus" ng-model="selectedValue" jqx-ng-model jqx-settings="dropDownListSettings"></jqx-drop-down-list>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Available From:
+                            </td>
+                            <td>
+                                <jqx-date-time-input ng-model="AvailableFrom" jqx-settings="dateInputSettings" id="dtpAvailable"></jqx-date-time-input>
+
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Note:
+                            </td>
+                            <td>
+                                <input ng-model="Notes" class="form-control" id="txtNotes" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td align="right"></td>
+                            <td style="padding-top: 10px;" align="right">
+                                <input style="margin-right: 5px;" type="button" id="Save" value="Save" />
+                                <input id="Cancel" type="button" value="Cancel" />
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    var demoApp = angular.module("myApp", ["jqwidgets"]).factory('$exceptionHandler', function () {
+        return function (exception, cause) {
+            exception.message += ' (caused by "' + cause + '")';
+            throw exception;
+        }
+    });
+    var reqData = [];
+    demoApp.controller("gridController", function ($parse, $scope, $http) {
+        $scope.theme = getTheme();
+        $scope.createWidget = false;
+
+        $scope.AvailableFrom = new Date();
+        $scope.Status = "";
+        $scope.Notes = "";
+        $scope.stat = "";
+
+        $scope.dateInputSettings = {
+            width: 200,
+            height: 30,
+            formatString: 'dd/MM/yyyy',
+            theme: $scope.theme
+        }
+        //Dropdown Settings
+        $scope.Status = [
+
+        {
+            id: 1,
+            name: "Pending"
+        }, {
+            id: 2,
+            name: "Approve"
+        }, {
+            id: 3,
+            name: "Reject"
+        }, {
+            id: 4,
+            name: "Waiting"
+        }];
+        // init DropDownList's settings object.
+        $scope.dropDownListSettings =
+        {
+            width: 200,
+            height: 30,
+            autoDropDownHeight: true,
+            displayMember: "name",
+            valueMember: "id",
+            source: $scope.Status
+
+        }
+        // init selectedValue.
+        $scope.selectedValue = $scope.Status[0];
+
+        $scope.searchDateSettings = {
+            width: 150,
+            height: 30,
+            formatString: 'dd/MM/yyyy',
+            theme: $scope.theme
+        }
+
+        $scope.ddlEligibleSettings = {
+            theme: $scope.theme,
+            width: 100,
+            height: 30,
+            autoDropDownHeight: true,
+            displayMember: "name",
+            valueMember: "id",
+            source: [{ id: 1, name: 'All' }, { id: 2, name: 'Yes' }, { id: 3, name: 'No' }]
+        };
+
+        $scope.FromDate = null;
+        $scope.ToDate = null;
+        $scope.selectedEligibleValue = { id: 2, name: 'Yes' };
+
+        var bindGrid = function () {
+            var source = {
+                datatype: "json",
+                type: "POST",
+                datafields: [
+                    { name: 'Id', type: 'int' },
+                    { name: 'StudentName', type: 'string' },
+                    { name: 'CollegeName', type: 'string' },
+                    { name: 'BranchName', type: 'int' },
+                    { name: 'Reference', type: 'string' },
+                    { name: 'SemesterStartDate', type: 'date' },
+                    { name: 'SemesterEndDate', type: 'date' },
+                    { name: 'RequestDate', type: 'date' },
+ { name: 'IsEligible', type: 'string' },
+                    { name: 'gender', type: 'int' },
+{ name: 'IsReferenceValidate', type: 'string' }
+                ],
+                url: '/Admin/GetPendingRequests',
+                data: { startDate: $scope.FromDate, endDate: $scope.ToDate, eligible: $scope.selectedEligibleValue.id },
+                Id: "Id"
+            };
+            var gridDataAdapter = new $.jqx.dataAdapter(source);
+            $scope.gridSettings.source = gridDataAdapter;
+        }
+
+        $scope.rowIds = [];
+
+        // create nested grid.
+        var initrowdetails = function (index, parentElement, gridElement, record) {
+            var id = record.uid.toString();
+            var grid = $($(parentElement).children()[0]);
+            var rowData = $scope.gridSettings.apply('getrowdata', index);
+            $scope.parentIndex = index;
+            if ($.inArray(id, $scope.rowIds) < 0)
+                $scope.rowIds.push(id);
+
+            //var reqDetail = [];
+            //$http({
+            //    method: 'POST',
+            //    url: '/Admin/GetRequestDetails',
+            //    data: JSON.stringify({ BookRequestId: rowData.Id, task: "Approve" })
+            //}).success(function (data, status) {
+            //    // prepare the data
+            //}).error(function (data, status) {
+            //    alert(data);
+            //    // Some error occurred
+            //});
+
+            var nestedSource = {
+                url: '/Admin/GetRequestDetails',
+                data: { BookRequestId: rowData.Id, task: "Approve" },
+                datafields: [
+                    { name: 'BookRequestDetailId', type: 'int' },
+                    { name: 'BookId', type: 'int' },
+                    { name: 'Title', type: 'string' },
+                    { name: 'Author', type: 'string' },
+                    { name: 'Publication', type: 'string' },
+                    { name: 'AvailableBooks', type: 'int' },
+                    { name: 'Status', type: 'int' },
+                    { name: 'totalInLibrary', type: 'int' },
+                    { name: 'ApprovedBooks', type: 'int' },
+                    { name: 'NewApproval', type: 'int' },
+                    { name: 'IssuedBooks', type: 'int' },
+                    { name: 'TornBooks', type: 'int' },
+                    { name: 'Available', type: 'string' },
+                    { name: 'Issue', type: 'int' },
+                    { name: 'Return', type: 'int' }
+                ],
+                datatype: 'json',
+                type: "POST",
+                root: 'Details'
+                //localdata: data//reqData[index].Details
+            };
+
+            var nestedAdapter = new $.jqx.dataAdapter(nestedSource);
+            var editrow = -1;
+            if (grid != null) {
+                grid.jqxGrid({
+                    source: nestedAdapter, width: '100%', height: 100,
+                    columnsresize: true,
+                    theme: $scope.theme,
+                    columns: [
+                        { text: "BookRequestDetailId", datafield: "BookRequestDetailId", hidden: true },
+                        { text: "Title", datafield: "Title", width: '20%' },
+                        { text: "BookId", datafield: "BookId", hidden: true },
+                        { text: "Author", datafield: "Author", width: '20%' },
+                        { text: "Publication", datafield: "Publication", width: '20%' },
+                        //  { text: 'totalInLibrary', datafield: 'totalInLibrary' },
+                        { text: 'Approved', datafield: 'ApprovedBooks', width: '5%' },
+                        { text: 'New Proposal', datafield: 'NewApproval', width: '5%' },
+                        { text: 'Issued', datafield: 'IssuedBooks', width: '5%' },
+                        { text: 'Torn/Missing', datafield: 'TornBooks', width: '5%' },
+                        { text: "Available", datafield: "Available", width: '5%' },
+                        {
+                            text: "", width: '15%', datafield: "Status",
+                            cellsrenderer: function (row, columnfield, value, defaulthtml, columnproperties) {
+                                // var BookRequestDetailId = 1;
+                                // var datarow = $("#jqxgrid").jqxGrid('getrowdata', index);
+                                var dataRecord = grid.jqxGrid('getrowdata', row);
+                                var BookRequestDetailId = dataRecord.BookRequestDetailId;
+                                var RequestID = dataRecord.RequestID;
+                                var Approve = dataRecord.ApprovedBooks;
+                                var Available = dataRecord.Available.substring(0, dataRecord.Available.indexOf("/"));
+                                var Isnew = "N";
+                                if (Approve < parseInt(Available))
+                                    Isnew = "O";
+                                $scope.RadioId = BookRequestDetailId;
+                                //$parse["_" + BookRequestDetailId] = value;
+                                //$parse.apply();
+
+                                $parse("_" + BookRequestDetailId).assign($scope, value);
+
+                                if (value == 4 || value == 5)
+                                    return "<input type='radio' name='_" + BookRequestDetailId + "' value='2' ng-model='_" + BookRequestDetailId + "' ng-change='newValue(" + BookRequestDetailId + ", \"" + Isnew + "\", 2, " + value.toString() + ", " + rowData.Id + ")' disabled>Approve"
+                                        + "<input type='radio' name='_" + BookRequestDetailId + "' value='3' ng-model='_" + BookRequestDetailId + "' ng-change='newValue(" + BookRequestDetailId + ", \"" + Isnew + "\", 3, " + value.toString() + ", " + rowData.Id + ")' disabled>Reject";
+
+                                else {
+                                    return "<input type='radio' name='_" + BookRequestDetailId + "' value='2' ng-model='_" + BookRequestDetailId + "' ng-change='newValue(" + BookRequestDetailId + ", \"" + Isnew + "\", 2, " + value.toString() + ", " + rowData.Id + ")'>Approve"
+                                        + "<input type='radio' name='_" + BookRequestDetailId + "' value='3' ng-model='_" + BookRequestDetailId + "' ng-change='newValue(" + BookRequestDetailId + ", \"" + Isnew + "\", 3, " + value.toString() + ", " + rowData.Id + ")'>Reject";
+                                }
+                            }
+                        }
+                        // ,
+                        //{
+                        //    text: 'Status', datafield: 'Status',
+                        //    cellsrenderer: function (cellValue, options, rowdata, action) {
+                        //
+                        //        var status = $scope.Status[rowdata - 1].name;
+                        //        if (rowdata == 1)
+                        //            return "<a style='color:red; margin: 4px; margin-left: 35px; float: left; position: relative;' href=''>" + status + "</a>";
+                        //        else
+                        //            return "<a style='margin: 4px; margin-left: 35px; float: left; position: relative;' href=''>" + status + "</a>";
+                        //    }
+                        //}
+
+
+                    ]
+                });
+
+                $scope.newValue = function (Id, Isnew, stat, oldStatus, RequestID) {
+                    var response;
+
+                    if (stat == 2) {
+                        if (Isnew == "N")
+                            response = confirm("There is no available book in Library. Do you want to Approve for Purchase new?");
+                        else {
+                            response = confirm("Do you want to Approve this Request?");
+                        }
+
+                    }
+                    else
+                        response = confirm("Do you want to Reject this Request?");
+                    $scope.RequestID = RequestID;
+                    $('#gridMain').blockElement({ showImage: true });
+                    if (response == true) {
+                        $http.post('/Admin/ApproveBookRequest', JSON.stringify({ BookRequestDetailId: Id, status: stat, oldStatus: oldStatus })).success(function (data) {
+                            bindGrid();
+                            $('#gridMain').unblock();
+                        });
+                    }
+                    else {
+                        bindGrid();
+                        $('#gridMain').unblock();
+                        // return;
+                    }
+
+                }
+
+                //Manage Edit Click
+                //grid.bind('cellclick', function (event) {
+                //
+                //    if (event.args.datafield == 'Status') {
+                //
+                //        // open the popup window when the user clicks a button.
+                //        editrow = event.args.rowindex;
+                //        var offset = grid.offset();
+                //        $("#popupWindow").jqxWindow({
+                //            position: 'center'
+                //        });
+                //        //{ x: parseInt(offset.left) + 10, y: parseInt(offset.top) + 60 }
+                //        //});
+                //        // get the clicked row's data and initialize the input fields.
+                //        var dataRecord = grid.jqxGrid('getrowdata', editrow);
+                //        $("#Title").val(dataRecord.Title);
+                //        $scope.BookRequestDetailId = dataRecord.BookRequestDetailId;
+                //        $scope.BookId = dataRecord.BookId;
+                //        var statusVal = event.args.value;
+                //        $("#drpStatus").jqxDropDownList('val', $scope.Status[statusVal - 1].id);
+
+                //        // show the popup window.
+                //        $("#popupWindow").jqxWindow('show');
+                //    }
+                //});
+                // initialize the popup window and buttons.
+                $("#popupWindow").jqxWindow({ width: 500, resizable: false, theme: $scope.theme, isModal: true, autoOpen: false, cancelButton: $("#Cancel") });
+                $("#Cancel").jqxButton();
+                $("#Save").jqxButton({ theme: $scope.theme });
+                $("#Save").click(function () {
+
+                    if (editrow >= 0) {
+                        var bookRequestDetail = {
+                            Id: $scope.BookRequestDetailId,
+                            BookId: $scope.BookId,
+                            Status: $("#drpStatus").jqxDropDownList('val'),
+                            AvailableFrom: $scope.AvailableFrom,
+                            Notes: $scope.Notes
+                        };
+
+                        $http.post('/Admin/ApproveBook', { detail: bookRequestDetail, bookRequestDetailId: $scope.BookRequestDetailId }).success(function (data) {
+                            // $scope.Message = data.Message;
+
+                            //clear content
+                            $scope.AvailableFrom = new Date();
+                            $scope.Notes = "";
+
+                            $("#popupWindow").jqxWindow('hide');
+                            // $('#jqxgrid').jqxGrid('updaterow', editrow, row);
+
+                        });
+
+
+
+                    }
+                });
+            }
+        }
+        $scope.gridSettings =
+        {
+            width: '100%',
+            theme: $scope.theme,
+            columnsresize: true,
+            rowdetails: true,
+            rowsheight: 35,
+            initrowdetails: initrowdetails,
+            rowdetailstemplate: {
+                rowdetails: "<div id='grid' ></div>",
+                rowdetailsheight: 100,
+                rowdetailshidden: true
+            },
+            bindingcomplete: function (event) {
+                if ($scope.RequestID <= 0)
+                    return;
+                var index = -1;
+
+                for (var i = 0, len = $scope.gridSettings.source.records.length; i < len; i++) {
+                    if ($scope.gridSettings.source.records[i].Id.toString() == $scope.RequestID) {
+                        index = i;
+                        break;
+                    }
+                }
+                $scope.RequestID = 0;
+                // var rowIndex = $scope.gridSettings.apply('getrowboundindexbyid', $scope.bookRequestId);
+                if (index >= 0)
+                    $scope.gridSettings.apply('showrowdetails', index);
+            }
+        };
+
+        bindGrid();
+
+        $scope.columns =
+        [{
+            text: '', datafield: 'IsEligible', width: 10,
+            cellsrenderer: function (row, columnfield, value, defaulthtml, columnproperties) {
+
+                var dataRecord = $scope.gridSettings.jqxGrid('getrowdata', row);
+                //grid.jqxGrid('getrowdata', row);
+                var Id = dataRecord.Id;
+                var gender = dataRecord.gender;
+                $parse("_" + Id).assign($scope, value);
+
+                if (value == "True") {
+                    if (gender == 1)
+                        return "<input type='image' name='_" + Id + "' src='../Content/Images/validMale.png' style='vertical-align: bottom'>";
+                    else
+                        return "<input type='image' name='_" + Id + "' src='../Content/Images/validFemale.png' style='vertical-align: bottom'>";
+                }
+                if (value == "False") {
+                    if (gender == 1)
+                        return "<input type='image' name='_" + Id + "' src='../Content/Images/invalidmale.png' style='vertical-align: bottom'>";
+                    else
+                        return "<input type='image' name='_" + Id + "' src='../Content/Images/invalidFemale.png' style='vertical-align: bottom'>";
+
+                }
+
+                if (gender == 1)
+                    return "<input type='image' name='_" + Id + "' src='../Content/Images/pendingMale.png' style='vertical-align: bottom'>";
+                else
+                    return "<input type='image' name='_" + Id + "' src='../Content/Images/pendingFemale.png' style='vertical-align: bottom'>";
+
+            }
+        },
+        {
+            text: '', datafield: 'IsReferenceValidate', width: 10,
+            cellsrenderer: function (row, columnfield, value, defaulthtml, columnproperties) {
+
+                var dataRecord = $scope.gridSettings.jqxGrid('getrowdata', row);
+                //grid.jqxGrid('getrowdata', row);
+                var Id = dataRecord.Id;
+                $parse("_" + Id).assign($scope, value);
+
+                if (value == "True")
+                    return "<input type='image' name='_" + Id + "' src='../Content/Images/ValidR.png' style='vertical-align: bottom'>";
+                if (value == "False")
+                    return "<input type='image' name='_" + Id + "' src='../Content/Images/InvalidR.png' style='vertical-align: bottom'>";
+                return "<input type='image' name='_" + Id + "' src='../Content/Images/PendingR.png' style='vertical-align: bottom'>";
+            }
+        },
+            { text: 'StudentName', datafield: 'StudentName' },
+            { text: 'CollegeName', datafield: 'CollegeName' },
+ { text: 'Reference', datafield: 'Reference', width: 180 },
+            { text: 'SemesterStartDate', datafield: 'SemesterStartDate', width: 120, cellsformat: 'dd/MM/yyyy' },
+            { text: 'SemesterEndDate', datafield: 'SemesterEndDate', width: 120, cellsformat: 'dd/MM/yyyy' },
+            { text: 'RequestDate', datafield: 'RequestDate', width: 120, cellsformat: 'dd/MM/yyyy' }
+        ];
+
+        $scope.onSearchClick = function (e) {
+            bindGrid();
+        };
+
+        // now create the widget.
+        $scope.createWidget = true;
+
+
+    });
+</script>

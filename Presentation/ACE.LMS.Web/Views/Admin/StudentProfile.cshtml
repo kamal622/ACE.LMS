@@ -1,0 +1,459 @@
+﻿@model ACE.LMS.Core.Models.Library.Student
+
+@{
+    ViewBag.Title = "Student Profile";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="col-lg-12">
+    <div style="color: #ff6a00;">
+        <h2>@ViewBag.Title</h2>
+    </div>
+    <div id="reqApp" class="row" ng-app="ABBApp">
+        <div class="col-md-12" ng-controller="studentController">
+            @using (Ajax.BeginForm("StudentProfile", "Admin", new AjaxOptions
+            {
+                OnSuccess = "onSuccess",
+                OnBegin = "onBegin",
+                OnFailure = "onFailure"
+            }, new { @class = "form-horizontal", role = "form" }))
+            {
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <b>( Note to applicant :</b> Please fill in this form to serve you better. This is not a precondition but an appeal to assist in understanding your requirement better. )
+                            </div>
+                        </div>
+                    </div>
+                    <div id="divProfilePic" class="col-md-4">
+                        @if (string.IsNullOrEmpty(Model.ImagePath))
+                        {
+                            <img id="imgProfilePic" src="/Uploads/ProfilePics/default-profile-icon.png"><input type="file" id="uploadStudentImage" style="display: none;" />
+                        }
+                        else
+                        {
+                            <img id="imgProfilePic" src="/Uploads/ProfilePics/@Model.ImagePath"><input type="file" id="uploadStudentImage" style="display: none;" />
+                        }
+                        <jqx-button jqx-theme="theme" jqx-width="120" jqx-height="27" class="cancel" type="button" onclick="$('#uploadStudentImage').click();">Change Photo</jqx-button>
+                        @Html.TextBoxFor(m => m.ImagePath, new { id = "txtImagePath", @style = " visibility: hidden;height: 0;width: 0;" })
+                        @Html.ValidationMessageFor(m => m.ImagePath, "", new { @class = "text-danger" })
+                        {{PhotoMessage}}
+                    </div>
+                </div>
+                <div class="row form-horizontal">
+                    <div id="frmMain">
+                        @Html.AntiForgeryToken()
+                        @Html.HiddenFor(m => m.Id)
+                        @Html.HiddenFor(m => m.CreatedBy)
+                        @Html.HiddenFor(m => m.CreatedOn)
+                        @Html.HiddenFor(m => m.UserId)
+                        <div ng-show="disableStudentInfo">
+                            <img id="image1" style="margin: 8px;" src="/Content/Images/help-icon.png" />
+                            If you want to update your personnal profile, please contact us on <a href="mailto:abb@acepolytech.com">abb@acepolytech.com</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <div class="form-group">
+                        @Html.LabelFor(m => m.EnrollmentNo, new { @class = "col-md-2 control-label" })
+                        <div class="col-md-4">
+                            @Html.TextBoxFor(m => m.EnrollmentNo, new { @class = "form-control" })
+                        </div>
+                        <div class="col-md-6" style="padding-top: 8px;">
+                            @Html.RadioButtonFor(m => m.IsEligible, true) Eligible
+                            @Html.RadioButtonFor(m => m.IsEligible, false) Not Eligible
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        @Html.LabelFor(m => m.Gender, new { @class = "col-md-2 control-label" })
+                        <div class="col-md-4">
+                            <jqx-drop-down-list ng-model="selectedGender" ng-theme="theme" jqx-settings="GenderSettings"></jqx-drop-down-list>
+                            @Html.ValidationMessageFor(m => m.Gender, "", new { @class = "text-danger" })
+                            @Html.HiddenFor(m => m.Gender, new { ng_value = "selectedGender" })
+                        </div>
+                        <div class="col-md-6">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-md-2 control-label">
+                            FirstName/LastName:
+                        </label>
+                        <div class="col-md-4">
+                            @Html.TextBoxFor(m => m.FirstName, new { @class = "form-control" })
+                            @Html.ValidationMessageFor(m => m.FirstName, "", new { @class = "text-danger" })
+                        </div>
+                        <div class="col-md-4">
+                            @Html.TextBoxFor(m => m.LastName, new { @class = "form-control" })
+                            @Html.ValidationMessageFor(m => m.LastName, "", new { @class = "text-danger" })
+                        </div>
+                        <div class="col-md-2"></div>
+                    </div>
+                    <div class="form-group">
+                        @Html.LabelFor(m => m.FatherName, new { @class = "col-md-2 control-label" })
+                        <div class="col-md-4">
+                            @Html.TextBoxFor(m => m.FatherName, new { @class = "form-control" })
+                            @Html.ValidationMessageFor(m => m.FatherName, "", new { @class = "text-danger" })
+                        </div>
+                        <div class="col-md-4">
+                            @Html.TextBoxFor(m => m.FatherNative, new { @class = "form-control" })
+                            @Html.ValidationMessageFor(m => m.FatherNative, "", new { @class = "text-danger" })
+                        </div>
+                        <div class="col-md-2"></div>
+                    </div>
+                    <div class="form-group">
+                        @Html.LabelFor(m => m.MotherName, new { @class = "col-md-2 control-label" })
+
+                        <div class="col-md-4">
+                            @Html.TextBoxFor(m => m.MotherName, new { @class = "form-control" })
+                            @Html.ValidationMessageFor(m => m.MotherName, "", new { @class = "text-danger" })
+                        </div>
+                        <div class="col-md-4">
+                            @Html.TextBoxFor(m => m.MotherNative, new { @class = "form-control" })
+                            @Html.ValidationMessageFor(m => m.MotherNative, "", new { @class = "text-danger" })
+                        </div>
+                        <div class="col-md-2"></div>
+                    </div>
+                    <div class="form-group">
+                        @Html.LabelFor(m => m.PresentAddress, new { @class = "col-md-2 control-label" })
+                        <div class="col-md-4">
+                            @Html.TextAreaFor(m => m.PresentAddress, new { @rows = 5, @class = "form-control" })
+                            @Html.ValidationMessageFor(m => m.PresentAddress, "", new { @class = "text-danger" })
+                        </div>
+                        <div class="col-md-4">
+                            @Html.TextAreaFor(m => m.PermanentAddress, new { @rows = 5, @class = "form-control" })
+                            @Html.ValidationMessageFor(m => m.PermanentAddress, "", new { @class = "text-danger" })
+                        </div>
+                        <div class="col-md-2"></div>
+                    </div>
+                    <div class="form-group">
+                        @Html.LabelFor(m => m.CityId, new { @class = "col-md-2 control-label" })
+                        <div class="col-md-3">
+                            <jqx-drop-down-list ng-model="selectedCityId" ng-theme="theme" ng-init="Select" jqx-settings="cityComboSettings"></jqx-drop-down-list>
+                            <input ng-model="Branch" class="form-control" style="display: none;" />
+                            @Html.ValidationMessageFor(m => m.CityId, "", new { @class = "text-danger" })
+                        </div>
+                        <div class="col-md-2">@Html.HiddenFor(m => m.CityId, new { ng_value = "selectedCityId" })</div>
+                    </div>
+                    <div class="form-group">
+                        @Html.LabelFor(m => m.DOB, new { @class = "col-md-2 control-label" })
+                        <div class="col-md-8">
+                            <jqx-date-time-input ng-model="BirthDate" jqx-settings="dateInputSettings"></jqx-date-time-input>
+                            @Html.ValidationMessageFor(m => m.DOB, "", new { @class = "text-danger" })
+                        </div>
+                        <div class="col-md-2">
+                            @Html.HiddenFor(m => m.DOB, new { ng_value = "BirthDate | date: 'dd/MM/yyyy'" })
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-md-2 control-label">
+                            Mobile/Phone:
+                        </label>
+                        <div class="col-md-4">
+                            @Html.TextBoxFor(m => m.Mobile, new { @class = "form-control" })
+                            @Html.ValidationMessageFor(m => m.Mobile, "", new { @class = "text-danger" })
+
+                        </div>
+                        <div class="col-md-4">
+                            @Html.TextBoxFor(m => m.Phone, new { @class = "form-control" })
+                            @Html.ValidationMessageFor(m => m.Phone, "", new { @class = "text-danger" })
+                        </div>
+                        <div class="col-md-2"></div>
+                    </div>
+                    <div class="form-group">
+                        @Html.LabelFor(m => m.Email, new { @class = "col-md-2 control-label" })
+                        <div class="col-md-4">
+                            @Html.TextBoxFor(m => m.Email, new { @class = "form-control" })
+                            @Html.ValidationMessageFor(m => m.Email, "", new { @class = "text-danger" })
+                        </div>
+                        <div class="col-md-4">
+                            @Html.TextBoxFor(m => m.AlternateEmail, new { @class = "form-control" })
+                            @Html.ValidationMessageFor(m => m.AlternateEmail, "", new { @class = "text-danger" })
+                        </div>
+                        <div class="col-md-2"></div>
+                    </div>
+                    <div class="form-group">
+                        @Html.LabelFor(m => m.SSCResult, new { @class = "col-md-2 control-label" })
+                        <div class="col-md-2">
+                            @Html.TextBoxFor(m => m.SSCResult, new { @class = "form-control" })
+                            @Html.ValidationMessageFor(m => m.SSCResult, "", new { @class = "text-danger" })
+                        </div>
+                        <div class="col-md-8">
+                            <jqx-drop-down-list ng-model="selectedValueSSC" ng-theme="theme" jqx-settings="yearSettings"></jqx-drop-down-list>
+                            @Html.ValidationMessageFor(m => m.SSCPassingYear, "", new { @class = "text-danger" })
+                            @Html.HiddenFor(m => m.SSCPassingYear, new { ng_value = "selectedValueSSC" })
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        @Html.LabelFor(m => m.HSCResult, new { @class = "col-md-2 control-label" })
+                        <div class="col-md-2">
+                            @Html.TextBoxFor(m => m.HSCResult, new { @class = "form-control" })
+                            @Html.ValidationMessageFor(m => m.HSCResult, "", new { @class = "text-danger" })
+                        </div>
+                        <div class="col-md-8">
+                            <jqx-drop-down-list ng-model="selectedValueHSC" ng-theme="theme" id="Year12" jqx-settings="yearSettings"></jqx-drop-down-list>
+                            @Html.ValidationMessageFor(m => m.HSCPassingYear, "", new { @class = "text-danger" })
+                            @Html.HiddenFor(m => m.HSCPassingYear, new { ng_model = "selectedValueHSC" })
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        @Html.LabelFor(m => m.OtherReference, new { @class = "col-md-2 control-label" })
+                        <div class="col-md-3">
+                            @Html.TextBoxFor(m => m.OtherReference, new { @class = "form-control" })
+                            @Html.ValidationMessageFor(m => m.OtherReference, "", new { @class = "text-danger" })
+                        </div>
+                        <div class="col-md-2">
+                            @Html.TextBoxFor(m => m.ReferenceMobile, new { @class = "form-control" })
+                            @Html.ValidationMessageFor(m => m.ReferenceMobile, "", new { @class = "text-danger" })
+                        </div>
+                        <div class="col-md-5" style="padding-top:8px;">
+                            @Html.RadioButtonFor(m => m.IsReferenceValidate, true) Verified
+                            @Html.RadioButtonFor(m => m.IsReferenceValidate, false) Not Verified
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        @Html.LabelFor(m => m.FatherOccupation, new { @class = "col-md-2 control-label" })
+                        <div class="col-md-4">
+                            @Html.TextBoxFor(m => m.FatherOccupation, new { @class = "form-control" })
+                            @Html.ValidationMessageFor(m => m.FatherOccupation, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        @Html.LabelFor(m => m.FamilyYearlyIncome, new { @class = "col-md-2 control-label" })
+                        <div class="col-md-4">
+                            @Html.TextBoxFor(m => m.FamilyYearlyIncome, new { @class = "form-control" })
+                            @Html.ValidationMessageFor(m => m.FamilyYearlyIncome, "", new { @class = "text-danger" })
+                        </div>
+                        <div class="col-md-6 checkbox">
+
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        @Html.LabelFor(m => m.NoOfBrotherSis, new { @class = "col-md-2 control-label" })
+                        <div class="col-md-4">
+                            @Html.TextBoxFor(m => m.NoOfBrotherSis, new { @class = "form-control" })
+                            @Html.ValidationMessageFor(m => m.NoOfBrotherSis, "", new { @class = "text-danger" })
+                        </div>
+                        <div class="col-md-6 checkbox">
+
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        @Html.LabelFor(m => m.Priority, new { @class = "col-md-2 control-label" })
+                        <div class="col-md-2">
+                            @Html.RadioButtonFor(m => m.Priority, 1) 1
+                            @Html.RadioButtonFor(m => m.Priority, 2) 2
+                            @Html.RadioButtonFor(m => m.Priority, 3) 3
+                            @Html.RadioButtonFor(m => m.Priority, 4) 4
+                            @Html.RadioButtonFor(m => m.Priority, 5) 5
+                        </div>
+                        <div class="col-md-8 checkbox">
+
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        @Html.LabelFor(m => m.Note, new { @class = "col-md-2 control-label" })
+                        <div class="col-md-4">
+                            @Html.TextAreaFor(m => m.Note, new { @rows = 5, @class = "form-control" })
+                            @Html.ValidationMessageFor(m => m.Note, "", new { @class = "text-danger" })
+                        </div>
+                        <div class="col-md-6 checkbox">
+
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-12 text-right">
+                    @*<jqx-button jqx-theme="theme" jqx-on-click="onSave(event)" ng-disabled="checked">Save</jqx-button>*@
+                    <jqx-button jqx-theme="theme" jqx-width="100" jqx-height="30" type="button" jqx-on-click="onBack(event)">Back</jqx-button>
+                    <jqx-button jqx-theme="theme" jqx-width="100" jqx-height="30">Save Changes</jqx-button>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    <script type="text/javascript" language="javascript">
+        var abbApp = angular.module("ABBApp", ["jqwidgets"]).factory('$exceptionHandler', function () {
+            return function (exception, cause) {
+                //exception.message += ' (caused by "' + cause + '")';
+                //console.log(exception, cause);
+                alert(exception.message);
+                throw exception;
+            }
+        });
+
+        abbApp.controller("studentController", function ($scope, $http) {
+            $('#reqApp').blockElement({ showImage: true });
+            $scope.createWidget = false;
+            $scope.theme = getTheme();
+            $scope.BirthDate = new Date('@Model.DOB.Value.ToString("MM/dd/yyyy")');
+            $scope.selectedValueSSC = '@Model.SSCPassingYear';
+            $scope.selectedValueHSC = '@Model.HSCPassingYear';
+            $scope.selectedGender = '@Model.Gender';
+            $scope.years = [];
+            $scope.years.push({ id: 0, name: "-- SELECT YEAR --" });
+            var lowEnd = 2000;
+            var highEnd = new Date().getFullYear();
+
+            for (var i = lowEnd; i <= highEnd; i++) {
+                $scope.years.push({ id: i, name: i });
+
+            }
+            $scope.yearSettings = {
+                width: 200,
+                height: 30,
+                autoDropDownHeight: true,
+                displayMember: "name",
+                valueMember: "id",
+                theme: $scope.theme,
+                source: $scope.years
+            }
+
+            $scope.GenderData = [];
+            $scope.GenderData.push({ id: 1, name: "Male" });
+            $scope.GenderData.push({ id: 2, name: "Female" });
+
+            $scope.GenderSettings = {
+                width: 200,
+                height: 30,
+                autoDropDownHeight: true,
+                displayMember: "name",
+                valueMember: "id",
+                theme: $scope.theme,
+                source: $scope.GenderData
+            }
+
+            var citySource = {
+                datatype: 'json',
+                url: '/Library/GetCities',
+            };
+            $scope.cityComboSettings = {
+                source: new $.jqx.dataAdapter(citySource),
+                height: 32,
+                displayMember: "Name",
+                valueMember: "Id",
+                theme: $scope.theme,
+                beforeSend: function (xhr) {
+                    $('#reqApp').blockElement({ showImage: true });
+                },
+                bindingComplete: function (event) {
+                    $scope.selectedCityId = '@Model.CityId';
+                    $('#reqApp').unblock();
+                }
+            };
+
+            $scope.dateInputSettings = {
+                width: 200,
+                height: 30,
+                formatString: 'dd/MM/yyyy',
+                theme: $scope.theme
+            }
+
+            $scope.onBack = function (event) {
+                window.location.href = '/Admin/EligibleStudents';
+            };
+        });
+
+        $(document).ready(function () {
+            $('form').validate().settings.ignore = []
+            $("#uploadStudentImage").change(function () {
+
+                var data = new FormData();
+                var files = $("#uploadStudentImage").get(0).files;
+                if (files.length > 0) {
+                    data.append("HelpSectionImages", files[0]);
+                    var uploadFile = files[0];
+                    if (!(/\.(gif|jpg|jpeg|tiff|png)$/i).test(uploadFile.name)) {
+                        $('#txtImagePath').val("");
+                        alert('You must select an image file only');
+                        return;
+                    }
+                    if (uploadFile.size > 2000000) { // 2mb
+                        $('#txtImagePath').val("");
+                        alert('Please upload a smaller image, max size is 2 MB');
+                        return;
+                    }
+                }
+
+                $.ajax({
+                    url: "/Library/UploadProfilePic",
+                    type: "POST",
+                    processData: false,
+                    contentType: false,
+                    data: data,
+                    success: function (response) {
+                        //code after success
+                        //alert(response.Message);
+
+                        if (response.FileName == "") {
+                            $('#txtImagePath').val("");
+                        } else {
+                            $('#txtImagePath').val(response.FileName);
+                            $("#imgProfilePic").attr("src", "/Uploads/ProfilePics/" + response.FileName);// response.FileName;
+                            $('#divProfilePic').unblock();
+                        }
+                    },
+                    error: function (er) {
+                        //alert(er);
+                        $('#divProfilePic').unblock();
+                    },
+                    beforeSend: function (jqXHR, settings) {
+                        $('#divProfilePic').blockElement({ showImage: true });
+                    }
+                });
+            });
+
+            jQuery.validator.addMethod('date', function (value, element, params) {
+                if (this.optional(element)) {
+                    return true;
+                };
+                var result = false;
+                try {
+                    //$.datepicker.parseDate(dateFormat, value);
+                    Date.parse(value);
+                    result = true;
+                } catch (err) {
+                    result = false;
+                }
+                return result;
+            },
+                ''
+            );
+        });
+
+        var onBegin = function () {
+            $('#reqApp').blockElement({ showImage: true });
+        }
+
+        var onSuccess = function (response) {
+            $('#reqApp').unblock();
+            if (response.MsgType == 1 || response.MsgType == 4) {
+                $.each(response.Messages, function (index, value) {
+                    //alert(index + ": " + value);
+                    displayBarNotification(value, 'error', 15);
+
+                    $('html, body').animate({
+                        'scrollTop': $("#container").position().top - 50
+                    });
+                });
+            }
+            else if (response.MsgType == 2) {
+                displayBarNotification('Student data saved successfully.', 'success', 15);
+                $('html, body').animate({
+                    'scrollTop': $("#container").position().top - 50
+                });
+                //window.location.href = response.RedirectUrl;
+            }
+        }
+
+        var onFailure = function (error) {
+            displayBarNotification('Oops! Unexptected error occured. Please contact administrator.', 'error', 15);
+
+            $('html, body').animate({
+                'scrollTop': $("#container").position().top - 50
+            });
+            $('#reqApp').unblock();
+        }
+    </script>
+}
